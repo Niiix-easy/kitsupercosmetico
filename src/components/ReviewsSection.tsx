@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { REVIEWS_DATA } from '../data/productData';
-import { Star, CheckCircle, ThumbsUp, Camera, MessageSquarePlus, Filter, X, Award, Share2, Instagram, MessageCircle, Copy, Check } from 'lucide-react';
+import { Star, CheckCircle, ThumbsUp, Camera, MessageSquarePlus, Filter, X, Award, Share2, MessageCircle, Copy, Check } from 'lucide-react';
 import { Review } from '../types';
 
 export const ReviewsSection: React.FC = () => {
@@ -209,7 +209,7 @@ export const ReviewsSection: React.FC = () => {
                 onClick={() => handleShareInstagram()}
                 className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:brightness-110 text-white font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
               >
-                <Instagram className="w-3.5 h-3.5" />
+                <Camera className="w-3.5 h-3.5" />
                 <span>Instagram</span>
               </button>
             </div>
@@ -228,16 +228,15 @@ export const ReviewsSection: React.FC = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-full overflow-hidden border border-amber-400/40 shrink-0 bg-slate-800 shadow-md">
-                      <LazyLoadImage
+                      <img
                         src={
-                          rev.id === 'rev-1' ? '/images/avatar-blonde.jpg' :
-                          rev.id === 'rev-2' ? '/images/avatar-salon.jpg' :
-                          rev.id === 'rev-3' ? '/images/avatar-brunette.jpg' :
-                          '/images/avatar-blonde.jpg'
+                          rev.id === 'rev-1' ? '/images/avatar-blonde.webp' :
+                          rev.id === 'rev-2' ? '/images/avatar-salon.webp' :
+                          rev.id === 'rev-3' ? '/images/avatar-brunette.webp' :
+                          '/images/avatar-blonde.webp'
                         }
                         alt={rev.name}
-                        effect="opacity"
-                        wrapperClassName="w-full h-full"
+                        loading="lazy"
                         className="w-full h-full object-cover"
                         onError={(e: any) => {
                           e.currentTarget.style.display = 'none';
@@ -285,11 +284,10 @@ export const ReviewsSection: React.FC = () => {
                   {rev.hasPhoto && (
                     <div className="mt-3 flex items-center gap-2">
                       <div className="w-16 h-16 rounded-lg overflow-hidden border border-amber-500/30 shrink-0">
-                        <LazyLoadImage
-                          src={rev.id === 'rev-1' ? '/images/hair-before-after-case1.jpg' : '/images/hair-before-after-case2.jpg'}
+                        <img
+                          src={rev.id === 'rev-1' ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
                           alt="Resultado de cabelo"
-                          effect="blur"
-                          wrapperClassName="w-full h-full"
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -328,7 +326,7 @@ export const ReviewsSection: React.FC = () => {
                     title="Compartilhar no Instagram"
                     className="p-1 rounded-md text-slate-400 hover:text-pink-400 hover:bg-pink-500/10 transition-colors cursor-pointer"
                   >
-                    <Instagram className="w-3.5 h-3.5" />
+                    <Camera className="w-3.5 h-3.5" />
                   </button>
 
                   <button

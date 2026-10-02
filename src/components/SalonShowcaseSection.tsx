@@ -20,23 +20,14 @@ export const SalonShowcaseSection: React.FC<SalonShowcaseSectionProps> = ({ onCt
               {/* Progressive loading background placeholder */}
               <div 
                 className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105 opacity-50"
-                style={{ backgroundImage: "url('/images/hair-salon-professional-tiny.jpg')" }}
+                style={{ backgroundImage: "url('/images/hair-salon-professional-tiny.webp')" }}
               />
 
-              {/* Skeleton loading state */}
-              {!isImgLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-r from-[#14151e]/60 via-[#1f212f]/60 to-[#14151e]/60 animate-pulse flex flex-col items-center justify-center gap-2 z-10">
-                  <div className="w-12 h-12 rounded-full border-2 border-amber-400/20 border-t-amber-400 animate-spin" />
-                  <span className="text-[10px] text-amber-300 font-mono">Carregando imagem do salão...</span>
-                </div>
-              )}
-
-              <LazyLoadImage
+              <img
                 src="/images/hair-salon-professional.webp"
                 alt="Profissional aplicando o tratamento Dyusar em salão de beleza"
-                effect="blur"
-                wrapperClassName="w-full h-80 sm:h-96"
-                afterLoad={() => setIsImgLoaded(true)}
+                loading="lazy"
+                onLoad={() => setIsImgLoaded(true)}
                 className={`w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-all duration-500 filter brightness-95 ${
                   isImgLoaded ? 'opacity-100' : 'opacity-0'
                 }`}

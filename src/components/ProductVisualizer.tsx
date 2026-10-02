@@ -25,35 +25,35 @@ export const ProductVisualizer: React.FC<ProductVisualizerProps> = ({
 
   const productPhotos = {
     kit: {
-      image: '/images/Kit Profissional Completo.png?v=luxury2',
+      image: '/images/Kit Profissional Completo.webp?v=luxury4',
       alt: 'Kit Profissional Completo Dyusar Super Reconstruction',
       title: 'Kit Profissional Completo (1 Litro + Queratina)',
       badge: 'Protocolo Master 4 Passos de Alto Impacto',
       desc: 'Linha completa profissional com Shampoo 1L, Condicionador 1L, Máscara Efeito Teia 1kg e Queratina Líquida 500ml.'
     },
     passo1: {
-      image: '/images/shampoo-reparador.jpg?v=luxury3',
+      image: '/images/shampoo-reparador.webp?v=luxury4',
       alt: 'Shampoo Hidratante Reparador Dyusar',
       title: 'Passo 1: Shampoo Hidratante Reparador 300ml',
-      badge: 'Limpeza Biomimética',
+      badge: 'Limpeza Fisiológica',
       desc: 'Limpa suavemente sem dilatar excessivamente a cutícula, preservando a hidratação e preparando o fio para máxima absorção da queratina.'
     },
     passo2: {
-      image: '/images/queratina-cauterizacao.jpg?v=luxury3',
+      image: '/images/queratina-cauterizacao.webp?v=luxury4',
       alt: 'Queratina Líquida Córtex Repair Cauterização Dyusar',
       title: 'Passo 2: Cauterização Queratina Córtex Repair 300ml',
       badge: 'Estrela do Tratamento ⭐',
       desc: 'Concentrado com 18 aminoácidos puros que penetra no córtex e quebra o efeito elástico na primeira aplicação.'
     },
     passo3: {
-      image: '/images/mascara-super-reconstrucao.jpg?v=luxury3',
+      image: '/images/mascara-super-reconstrucao.webp?v=luxury4',
       alt: 'Máscara Super Reconstrução Intensiva Dyusar 300g',
       title: 'Passo 3: Máscara Super Reconstrução 300g',
       badge: 'Liponutrição com Ojon e Murumuru',
       desc: 'Envelopa o fio restaurando maleabilidade, sedosidade e selagem profunda das cutículas sem enrijecer o cabelo.'
     },
     passo4: {
-      image: '/images/leave-in-selante.jpg?v=luxury3',
+      image: '/images/leave-in-selante.webp?v=luxury4',
       alt: 'Leave-in Selante Térmico Dyusar',
       title: 'Passo 4: Leave-in Selante Térmico & Defrizante 200ml',
       badge: 'Proteção Térmica 230°C',
@@ -84,34 +84,29 @@ export const ProductVisualizer: React.FC<ProductVisualizerProps> = ({
           {((activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image)).includes('.webp') && (
             <div 
               className="absolute inset-0 bg-contain bg-center bg-no-repeat filter blur-lg opacity-25 scale-75"
-              style={{ backgroundImage: `url('${(activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image).replace('.webp', '-tiny.jpg')}')` }}
+              style={{ backgroundImage: `url('${(activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image).replace('.webp', '-tiny.webp')}')` }}
             />
           )}
 
-          {/* Skeleton loading state */}
-          {!isImgLoaded && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#121319]/60 backdrop-blur-xs animate-pulse z-10">
-              <div className="w-12 h-12 rounded-full border-2 border-amber-400/20 border-t-amber-400 animate-spin" />
-              <span className="text-[10px] text-amber-300 font-mono tracking-wider">Carregando visualização 3D...</span>
-            </div>
-          )}
-
-          <LazyLoadImage
-            key={activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image}
-            src={activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image}
-            alt={current.alt}
-            effect="blur"
-            wrapperClassName="max-h-[82%] max-w-[90%] flex items-center justify-center"
-            afterLoad={() => setIsImgLoaded(true)}
-            className={`max-h-[82%] max-w-[90%] object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-all duration-500 rounded-lg ${
-              isImgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-            }`}
-            onError={(e: any) => {
-              // Fallback to secondary image if specific asset fails
-              e.currentTarget.src = '/images/Kit Profissional 1 Litro.png';
-              setIsImgLoaded(true);
-            }}
-          />
+          {/* Main Product Image */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            <img
+              key={activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image}
+              src={activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image}
+              alt={current.alt}
+              // @ts-ignore - fetchPriority is the React-compatible property name for LCP optimization
+              fetchPriority={activeView === 'kit' ? 'high' : 'auto'}
+              loading={activeView === 'kit' ? 'eager' : 'lazy'}
+              onLoad={() => setIsImgLoaded(true)}
+              className={`max-h-[82%] max-w-[90%] object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-all duration-500 rounded-lg ${
+                isImgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              }`}
+              onError={(e: any) => {
+                e.currentTarget.src = '/images/Kit Profissional 1 Litro.png';
+                setIsImgLoaded(true);
+              }}
+            />
+          </div>
 
           {/* Bottom subtitle / caption */}
           <div className="mt-2 text-center">

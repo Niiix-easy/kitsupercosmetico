@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import ReactPlayer from 'react-player';
-import { Star, ShieldCheck, Play, Pause, Volume2, VolumeX, Sparkles, Award, CheckCircle2, ArrowRight } from 'lucide-react';
-
-const Player = ReactPlayer as any;
+import { Star, ShieldCheck, Play, Pause, Volume2, VolumeX, Sparkles, Award, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
 
 interface VideoTestimonialsProps {
   onSelectKit: () => void;
 }
+
+const Player = ReactPlayer as any;
 
 interface TestimonialItem {
   id: string;
@@ -24,20 +24,21 @@ interface TestimonialItem {
 export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKit }) => {
   const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [playerErrors, setPlayerErrors] = useState<Record<string, boolean>>({});
 
-  // Safe way to switch videos preventing "play() request interrupted by pause()" errors
   const handlePlayerSelect = (id: string | null) => {
-    if (id === activePlayerId) return;
-    
-    // First stop current one
-    setActivePlayerId(null);
-    
-    if (id) {
-      // Small delay before starting next one (increased to 150ms for stability)
-      setTimeout(() => {
-        setActivePlayerId(id);
-      }, 150);
+    if (id === activePlayerId) {
+      setActivePlayerId(null);
+      return;
     }
+    
+    // Switch to new video
+    setActivePlayerId(id);
+  };
+
+  const handlePlayerError = (id: string) => {
+    console.error(`Error loading video testimonial: ${id}`);
+    setPlayerErrors(prev => ({ ...prev, [id]: true }));
   };
 
   const testimonials: TestimonialItem[] = [
@@ -48,8 +49,8 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
       city: 'São Paulo - SP',
       salon: 'Mendes Hair Therapy',
       quote: 'Recebo clientes com corte químico severo após descolorações agressivas. O Passo 2 Córtex Repair da Dyusar interrompeu o emborrachamento em 60 segundos no lavatório sem enrijecer.',
-      videoUrl: 'https://joy.videvo.net/videvo_files/video/free/2019-11/large_watermarked/190301_08_Salon_01_preview.mp4',
-      poster: '/images/avatar-salon.jpg',
+      videoUrl: 'https://vjs.zencdn.net/v/oceans.mp4',
+      poster: '/images/avatar-salon.webp',
       highlightTag: 'Recuperação de Corte Químico',
       rating: 5
     },
@@ -60,8 +61,8 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
       city: 'Curitiba - PR',
       salon: 'Ferraz Hair Concept',
       quote: 'O teste de elasticidade que fiz após platinar um cabelo fragilizado impressionou todos no salão. A reposição com Ojon e Murumuru entrega maleabilidade e brilho espelhado 3D.',
-      videoUrl: 'https://joy.videvo.net/videvo_files/video/free/2019-11/large_watermarked/190301_08_Salon_12_preview.mp4',
-      poster: '/images/hair-before-after-case2.jpg',
+      videoUrl: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
+      poster: '/images/hair-before-after-case2.webp',
       highlightTag: 'Teste de Elasticidade Imediato',
       rating: 5
     },
@@ -72,8 +73,8 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
       city: 'Rio de Janeiro - RJ',
       salon: 'Espaço Beauty Albuquerque',
       quote: 'Rendimento excelente de até 60 aplicações no kit de 1 litro. Minha agenda de reconstrução pós-química aumentou consideravelmente pela fidelização das clientes.',
-      videoUrl: 'https://joy.videvo.net/videvo_files/video/free/2019-11/large_watermarked/190301_08_Salon_21_preview.mp4',
-      poster: '/images/hair-salon-professional.jpg',
+      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      poster: '/images/hair-salon-professional.webp',
       highlightTag: 'Padrão Salão de Alto Luxo',
       rating: 5
     }
@@ -93,7 +94,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
             <span>Depoimentos em Vídeo de Profissionais</span>
           </div>
 
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-serif-display">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-serif-display text-balance">
             Aprovado pelos Maiores Terapeutas Capilares do País
           </h2>
 
@@ -106,6 +107,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((item) => {
             const isThisPlaying = activePlayerId === item.id;
+            const hasError = playerErrors[item.id];
 
             return (
               <div
@@ -115,25 +117,37 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
                 <div>
                   {/* Video Viewport Container powered by ReactPlayer */}
                   <div className="relative aspect-video w-full bg-black overflow-hidden">
-                    <Player
-                      url={item.videoUrl}
-                      playing={isThisPlaying}
-                      muted={isMuted}
-                      loop
-                      width="100%"
-                      height="100%"
-                      playsinline
-                      onPlay={() => setActivePlayerId(item.id)}
-                      onPause={() => {
-                        if (activePlayerId === item.id) setActivePlayerId(null);
-                      }}
-                    />
+                    {!hasError ? (
+                      <Player
+                        url={item.videoUrl}
+                        playing={isThisPlaying}
+                        muted={isMuted}
+                        loop
+                        width="100%"
+                        height="100%"
+                        playsinline
+                        onError={() => handlePlayerError(item.id)}
+                        className="absolute top-0 left-0"
+                        config={{
+                          file: {
+                            attributes: {
+                              poster: item.poster
+                            }
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 p-4 text-center">
+                        <AlertCircle className="w-8 h-8 text-rose-500 mb-2" />
+                        <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Vídeo Temporariamente Indisponível</span>
+                      </div>
+                    )}
 
                     {/* Dark gradient overlay when paused */}
-                    {!isThisPlaying && (
+                    {!isThisPlaying && !hasError && (
                       <div 
                         onClick={() => handlePlayerSelect(item.id)}
-                        className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center cursor-pointer group-hover:bg-black/40 transition-colors z-20"
+                        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer group-hover:bg-black/40 transition-colors z-20"
                       >
                         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 to-amber-300 text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
                           <Play className="w-6 h-6 fill-black translate-x-0.5" />
@@ -149,7 +163,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
                     </div>
 
                     {/* Sound Control Toggle */}
-                    {isThisPlaying && (
+                    {isThisPlaying && !hasError && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -209,7 +223,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
 
         {/* Bottom Call to Action */}
         <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-[#171922] via-[#1b1c26] to-[#171922] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-left max-w-4xl mx-auto shadow-2xl">
-          <div>
+          <div className="flex-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
               Tenha o Mesmo Padrão de Salão na Sua Rotina
             </span>

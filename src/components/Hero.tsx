@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { Star, ShieldCheck, Zap, ArrowRight, Sparkles, CheckCircle, Truck, Award } from 'lucide-react';
 import { ProductVisualizer } from './ProductVisualizer';
 import { FeaturedVideoPlayer } from './FeaturedVideoPlayer';
+import { getHeroVariant, trackHeroClick, HeroVariant } from '../utils/abTesting';
+import gsap from 'gsap';
 
 interface HeroProps {
   onOpenCartWithBundle: (bundleId: string) => void;
@@ -9,8 +11,63 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [variant, setVariant] = useState<HeroVariant>('result');
+
+  useEffect(() => {
+    setVariant(getHeroVariant());
+  }, []);
+
+  const handlePurchaseClick = () => {
+    trackHeroClick(variant);
+    onOpenCartWithBundle('kit-profissional-1litro');
+  };
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      // Create a master timeline for the hero reveal
+      const tl = gsap.timeline({ defaults: { ease: 'power4.out', duration: 1.2 } });
+
+      tl.from('.gsap-reveal-pill', {
+        y: 20,
+        opacity: 0,
+        duration: 0.8
+      })
+      .from('.gsap-reveal-title', {
+        y: 40,
+        opacity: 0,
+        clipPath: 'polygon(0 0, 100% 0, 100% 0, 0 0)',
+        stagger: 0.1
+      }, '-=0.5')
+      .from('.gsap-reveal-text', {
+        y: 20,
+        opacity: 0,
+        stagger: 0.1
+      }, '-=0.8')
+      .from('.gsap-reveal-benefits > div', {
+        x: -20,
+        opacity: 0,
+        stagger: 0.05,
+        duration: 0.6
+      }, '-=0.6')
+      .from('.gsap-reveal-pricing', {
+        y: 30,
+        opacity: 0,
+        duration: 1
+      }, '-=0.6')
+      .from('.gsap-reveal-visual', {
+        scale: 0.95,
+        opacity: 0,
+        duration: 1.5
+      }, '-=1.2');
+
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-[#0c0d10]">
+    <section ref={containerRef} className="relative overflow-hidden pt-8 pb-16 lg:pt-14 lg:pb-24 bg-[#0c0d10]">
       {/* Background Subtle Gradient Spheres */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0%,transparent_70%)] pointer-events-none" />
       <div className="absolute top-10 right-0 w-96 h-96 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05)_0%,transparent_70%)] pointer-events-none" />
@@ -22,7 +79,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
           <div className="lg:col-span-7 flex flex-col text-left">
             
             {/* Trust Pill & Social Proof Rating */}
-            <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="gsap-reveal-pill flex flex-wrap items-center gap-3 mb-4">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Tratamento Reconstrutor SOS Salão</span>
@@ -40,17 +97,25 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
             </div>
 
             {/* Main Conversion Headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.15] tracking-tight font-serif-display text-balance">
-              Pare o Efeito Chiclete e Recupere até <span className="gold-gradient-text">97% da Massa Capilar</span> na 1ª Aplicação.
+            <h1 className="gsap-reveal-title text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-[1.15] tracking-tight font-serif-display text-balance">
+              {variant === 'result' ? (
+                <>Resultado de Salão em Casa: Recupere até <span className="gold-gradient-text">97% da Massa Capilar</span> na 1ª Aplicação.</>
+              ) : (
+                <>Ciência Dyusar Nano-Vetorizada: O Fim do <span className="gold-gradient-text">Corte Químico</span> e do Efeito Chiclete.</>
+              )}
             </h1>
 
             {/* Sub-headline */}
-            <p className="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl font-sans-body">
-              A fórmula de <strong>Alta Performance Profissional</strong> com Queratina Nano-Vetorizada, Complexo de 18 Aminoácidos e Óleos Nobres que reconstrói o córtex de cabelos elásticos, emborrachados ou com corte químico sem enrijecer o fio.
+            <p className="gsap-reveal-text mt-4 text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl font-sans-body">
+              {variant === 'result' ? (
+                <>A fórmula de <strong>Alta Performance Profissional</strong> que reconstrói o córtex de cabelos elásticos, emborrachados ou com corte químico sem enrijecer o fio.</>
+              ) : (
+                <>A tecnologia de nanopartículas que penetra profundamente na fibra capilar para restaurar as pontes de dissulfeto e interromper a quebra imediatamente.</>
+              )}
             </p>
 
             {/* Quick Benefits Bullet Points */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-slate-200">
+            <div className="gsap-reveal-benefits mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs sm:text-sm text-slate-200">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>Interrompe a quebra e elasticidade imediatamente</span>
@@ -70,7 +135,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
             </div>
 
             {/* Price Anchor & Special Offer Block */}
-            <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-[#171922] to-[#121319] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+            <div className="gsap-reveal-pricing mt-8 p-4 rounded-xl bg-gradient-to-r from-[#171922] to-[#121319] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400 line-through">De R$ 389,90</span>
@@ -90,7 +155,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
               {/* Action Buttons */}
               <div className="flex flex-col sm:items-end gap-2 shrink-0">
                 <button
-                  onClick={() => onOpenCartWithBundle('kit-profissional-1litro')}
+                  onClick={handlePurchaseClick}
                   className="relative group overflow-hidden px-6 py-3 text-sm font-bold uppercase tracking-wider text-black rounded-xl bg-gradient-to-r from-[#ffe58f] via-[#d4af37] to-[#ba8c1a] shadow-lg shadow-amber-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer text-center"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -107,7 +172,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
             </div>
 
             {/* Diagnostic Quiz Trigger Link & Guarantee */}
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
+            <div className="gsap-reveal-text mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
               <button
                 onClick={onOpenQuiz}
                 className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-medium underline underline-offset-4 cursor-pointer"
@@ -125,7 +190,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
           </div>
 
           {/* Right Column: Visualizer & 3D Interactive Stage + Featured Video (5 cols) */}
-          <div className="lg:col-span-5 flex flex-col items-center">
+          <div className="gsap-reveal-visual lg:col-span-5 flex flex-col items-center">
             <ProductVisualizer />
             <FeaturedVideoPlayer onBuyKit={() => onOpenCartWithBundle('kit-profissional-1litro')} />
           </div>
@@ -135,3 +200,4 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCartWithBundle, onOpenQuiz }) 
     </section>
   );
 };
+

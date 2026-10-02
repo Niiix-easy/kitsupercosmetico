@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Orders: Anyone can create (to start payment), but only owners or admins can read/update
+    match /orders/{orderId} {
+      allow create: if true; // Allows anonymous/unverified users to place orders
+      allow get: if isAdmin() || (isSignedIn() && resource.data.customerEmail == request.auth.token.email);
+      allow list: if isAdmin();
+      allow update: if isAdmin(); // Status updates should be server-side or admin-only
+    }
+
+    // Quiz Attempts: Anonymous users can track their progress
+    match /quiz_attempts/{attemptId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+
+    // Admins: Read-only for verification
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Only manageable via Admin SDK or Firebase Console
+    }
+  }
+}

@@ -1,14 +1,14 @@
 import React, { useState, useRef } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { TREATMENT_STEPS } from '../data/productData';
 import { Clock, Sparkles, CheckCircle2, ChevronRight, Info, Camera, ZoomIn, X, AlertTriangle } from 'lucide-react';
 import { saveStoredKitImage } from '../utils/kitImageStorage';
+import { VisualStepByStep } from './VisualStepByStep';
 
 const DEFAULT_STEP_PHOTOS: Record<string, string> = {
-  '01': '/images/shampoo-reparador.jpg?v=luxury4',
-  '02': '/images/queratina-cauterizacao.jpg?v=luxury4',
-  '03': '/images/mascara-super-reconstrucao.jpg?v=luxury4',
-  '04': '/images/leave-in-selante.jpg?v=luxury4'
+  '01': '/images/shampoo-reparador.webp?v=luxury4',
+  '02': '/images/queratina-cauterizacao.webp?v=luxury4',
+  '03': '/images/mascara-super-reconstrucao.webp?v=luxury4',
+  '04': '/images/leave-in-selante.webp?v=luxury4'
 };
 
 export const StepByStepSection: React.FC = () => {
@@ -155,12 +155,11 @@ export const StepByStepSection: React.FC = () => {
             {/* Left badge, photo & title */}
             <div className="md:col-span-5 flex flex-col sm:flex-row md:flex-col items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-slate-800 pb-6 md:pb-0 md:pr-6 gap-4">
               <div className="relative w-36 h-48 rounded-xl bg-gradient-to-b from-[#181922] to-black border border-amber-500/40 p-2.5 flex items-center justify-center shrink-0 shadow-xl group overflow-hidden">
-                <LazyLoadImage
+                <img
                   key={currentPhoto}
                   src={currentPhoto}
                   alt={activeStep.name}
-                  effect="blur"
-                  wrapperClassName="w-full h-full flex items-center justify-center"
+                  loading="lazy"
                   className="max-h-full max-w-full object-contain filter drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                   onClick={() => setZoomImage({ url: currentPhoto, title: activeStep.name })}
                 />
@@ -212,6 +211,8 @@ export const StepByStepSection: React.FC = () => {
 
             {/* Right: Action & Application Instructions */}
             <div className="md:col-span-7 flex flex-col gap-4 text-xs sm:text-sm">
+              <VisualStepByStep activeStep={activeStepIndex} />
+              
               <div className="p-4 rounded-xl bg-black/40 border border-slate-800">
                 <h4 className="font-bold text-white flex items-center gap-2 text-sm text-amber-300">
                   <CheckCircle2 className="w-4 h-4 text-amber-400" />

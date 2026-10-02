@@ -62,6 +62,13 @@
     <meta name="twitter:image" content="https://ais-pre-j3ls54g6ntffae6xl7lcmw-461589299204.us-west2.run.app/images/Kit%20Profissional%20Completo.png?v=luxury2" />
     <meta name="twitter:image:alt" content="Kit Profissional Completo Dyusar Super Reconstrução 4 Passos" />
 
+    <!-- PWA / Web App Manifest -->
+    <meta name="theme-color" content="#0c0d10" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="/images/logo-dyusar-horizontal.png" />
+    <link rel="manifest" href="/manifest.json" />
+
     <!-- Schema.org Structured Data (JSON-LD) for E-Commerce Product & Brand -->
     <script type="application/ld+json">
     {
@@ -113,7 +120,11 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    </noscript>
 
     <!-- ============================================================== -->
     <!-- TRACKING PIXELS & ANALYTICS (META, GOOGLE, TIKTOK)              -->
@@ -180,6 +191,17 @@
   <body class="bg-[#0c0d10] text-[#f4f4f5] antialiased selection:bg-[#d4af37]/30 selection:text-[#fae596]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Basic Offline Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
 

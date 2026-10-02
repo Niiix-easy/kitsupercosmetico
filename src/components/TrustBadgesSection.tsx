@@ -146,6 +146,27 @@ export const TrustBadgesSection: React.FC = () => {
           })}
         </div>
 
+        {/* Media Authority / "As Seen In" Section */}
+        <div className="mt-12 pt-8 border-t border-slate-800/80">
+          <p className="text-[10px] uppercase font-black tracking-[0.3em] text-slate-500 mb-6 text-center">
+            Mencionado nos Maiores Veículos de Beleza & Estilo
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+            {['GLAMOUR', 'VOGUE', 'ELLE', 'MARIE CLAIRE', 'ESTADÃO'].map((media) => (
+              <span 
+                key={media} 
+                className="text-lg sm:text-xl font-black tracking-tighter text-slate-300 font-serif-display select-none hover:text-amber-400 transition-colors"
+              >
+                {media}
+              </span>
+            ))}
+          </div>
+          <div className="mt-6 flex items-center justify-center gap-1.5 text-[9px] text-slate-500 uppercase font-bold tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+            <span>Resultados Cientificamente Comprovados</span>
+          </div>
+        </div>
+
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins } from 'lucide-react';
 import { useLoyaltyPoints } from '../hooks/useLoyaltyPoints';
@@ -11,12 +11,39 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQuiz }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const loyaltyPoints = useLoyaltyPoints();
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Always show at the very top
+      if (currentScrollY < 100) {
+        setIsVisible(true);
+        setLastScrollY(currentScrollY);
+        return;
+      }
+
+      // If scrolling down, hide; if scrolling up, show
+      if (currentScrollY > lastScrollY && !mobileMenuOpen) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY, mobileMenuOpen]);
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#0c0d10]/95 backdrop-blur-md border-b border-amber-500/20">
+    <header className={`sticky top-0 z-40 w-full bg-[#0c0d10]/95 backdrop-blur-md border-b border-amber-500/20 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       {/* Slim Top Announcement Bar (<=40px) */}
       <div className="bg-gradient-to-r from-[#91711e] via-[#d4af37] to-[#805e13] px-3 py-1.5 text-center text-[11px] sm:text-xs font-semibold text-black tracking-wide flex items-center justify-center gap-2 overflow-hidden">
         <span className="animate-pulse">🚨</span>
@@ -30,11 +57,11 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
         
         {/* Zone 1: Single text element wordmark / Official logo */}
         <a href="#" className="flex items-center gap-2 group shrink-0">
-          <LazyLoadImage
-            src="/images/logo-dyusar-horizontal.png"
+          <img
+            src="/images/logo-dyusar-horizontal.webp"
             alt="Dyusar Cosméticos Profissionais"
-            effect="opacity"
-            wrapperClassName="h-7 sm:h-9"
+            // @ts-ignore
+            fetchPriority="high"
             className="h-7 sm:h-9 w-auto object-contain filter brightness-110 drop-shadow-md"
             onError={(e: any) => {
               const target = e.currentTarget;
@@ -74,9 +101,12 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           <a href="#ativos" className="hover:text-amber-300 transition-colors whitespace-nowrap">
             Ativos Científicos
           </a>
-          <a href="#ofertas" className="hover:text-amber-300 transition-colors whitespace-nowrap">
-            Kits & Ofertas
-          </a>
+          <button 
+            onClick={onOpenCart} 
+            className="hover:text-amber-300 transition-colors whitespace-nowrap cursor-pointer"
+          >
+            Carrinho & Pedido
+          </button>
           <a href="#depoimentos" className="hover:text-amber-300 transition-colors whitespace-nowrap">
             Resultados Reais
           </a>
@@ -123,13 +153,13 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           </button>
 
           {/* Primary CTA button */}
-          <a
-            href="#ofertas"
-            className="relative overflow-hidden px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-black rounded-lg bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 shadow-md hover:brightness-110 transition-all whitespace-nowrap"
+          <button
+            onClick={onOpenCart}
+            className="relative overflow-hidden px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-black rounded-lg bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 shadow-md hover:brightness-110 transition-all whitespace-nowrap cursor-pointer"
           >
             <span className="relative z-10">Comprar Agora</span>
             <div className="absolute inset-0 bg-white/20 translate-x-[-100%] animate-shimmer" />
-          </a>
+          </button>
 
           {/* Mobile Menu Hamburger Toggle */}
           <button
@@ -180,13 +210,15 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
             >
               Ativos Científicos & Fórmula
             </a>
-            <a 
-              href="#ofertas" 
-              onClick={closeMobileMenu}
-              className="py-1.5 px-2 rounded-lg text-amber-300 font-bold hover:bg-slate-800 transition-colors"
+            <button 
+              onClick={() => {
+                closeMobileMenu();
+                onOpenCart();
+              }}
+              className="w-full text-left py-1.5 px-2 rounded-lg text-amber-300 font-bold hover:bg-slate-800 transition-colors cursor-pointer"
             >
-              Kits Promocionais com Desconto
-            </a>
+              Meu Carrinho de Compras
+            </button>
             <a 
               href="#depoimentos" 
               onClick={closeMobileMenu}

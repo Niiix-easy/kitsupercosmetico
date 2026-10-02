@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { X, CheckCircle2, ShieldCheck, QrCode, CreditCard, FileText, Copy, ArrowRight, Truck, Sparkles, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, CheckCircle2, ShieldCheck, QrCode, CreditCard, FileText, Copy, ArrowRight, Truck, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { CartItem } from '../types';
+import axios from 'axios';
+import { db } from '../lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -25,6 +28,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [copiedPix, setCopiedPix] = useState(false);
   const [pixTimeLeft, setPixTimeLeft] = useState(900); // 15 minutes in seconds
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  // Real Pix State
+  const [order, setOrder] = useState<any>(null);
 
   const [fullName, setFullName] = useState('');
   const [cpf, setCpf] = useState('');
@@ -45,8 +52,6 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [cardCvv, setCardCvv] = useState('');
   const [installments, setInstallments] = useState(12);
 
-  if (!isOpen) return null;
-
   // Pricing calculations
   const rawSubtotal = cartItems.reduce((acc, item) => {
     const itemTotal = item.bundle.price * item.quantity;
@@ -55,22 +60,85 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   }, 0);
 
   const finalSubtotal = Math.max(0, rawSubtotal - discountAmount);
-  // Pix gets 10% extra discount
   const pixDiscount = paymentMethod === 'pix' ? finalSubtotal * 0.1 : 0;
   const totalToPay = finalSubtotal - pixDiscount;
 
-  const pixPayload = `00020126580014br.gov.bcb.pix0136dyusar-pagamentos@dyusar.com.br5204000053039865405${totalToPay.toFixed(2)}5802BR5925DYUSAR COSMETICOS LTDA6009SAO PAULO62070503***6304${Math.floor(1000 + Math.random() * 9000).toString(16).toUpperCase()}`;
+  // Listen for real-time payment status
+  useEffect(() => {
+    if (order?.id && order.status === 'pending') {
+      const unsub = onSnapshot(doc(db, 'orders', order.id), (doc) => {
+        const data = doc.data();
+        if (data?.status === 'paid') {
+          handlePaymentApproved();
+        }
+      });
+      return () => unsub();
+    }
+  }, [order?.id]);
 
-  const handleCopyPix = () => {
-    navigator.clipboard.writeText(pixPayload);
-    setCopiedPix(true);
-    setTimeout(() => setCopiedPix(false), 3500);
+  // Pix timer
+  useEffect(() => {
+    if (step === 'payment' && paymentMethod === 'pix' && pixTimeLeft > 0) {
+      const timer = setInterval(() => setPixTimeLeft(prev => prev - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [step, paymentMethod, pixTimeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const handleInfoSubmit = (e: React.FormEvent) => {
+  const handlePaymentApproved = () => {
+    confetti({
+      particleCount: 150,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#d4af37', '#ffffff', '#22c55e']
+    });
+    setStep('success');
+    onOrderSuccess();
+  };
+
+  const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !phone) return;
-    setStep('payment');
+    
+    setIsProcessing(true);
+    setErrorMessage(null);
+
+    try {
+      // Create real Pix payment via backend
+      const names = fullName.split(' ');
+      const firstName = names[0];
+      const lastName = names.slice(1).join(' ') || 'Cliente';
+
+      const response = await axios.post('/api/create-pix', {
+        bundleId: cartItems[0].bundle.id,
+        bundleTitle: cartItems[0].bundle.title,
+        amount: totalToPay,
+        email,
+        firstName,
+        lastName,
+        phone
+      });
+
+      setOrder(response.data);
+      setStep('payment');
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      setErrorMessage('Falha ao gerar pagamento. Verifique os dados ou tente novamente.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCopyPix = () => {
+    if (!order?.pixQrCode) return;
+    navigator.clipboard.writeText(order.pixQrCode);
+    setCopiedPix(true);
+    setTimeout(() => setCopiedPix(false), 3500);
   };
 
   const handleConfirmPayment = () => {
@@ -78,20 +146,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     
     setIsProcessing(true);
 
-    // Simulate payment processing delay (2.5 seconds)
+    // Simulate non-Pix payment processing delay
     setTimeout(() => {
-      // Trigger confetti celebration
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-
-      setStep('success');
+      handlePaymentApproved();
       setIsProcessing(false);
-      onOrderSuccess();
-    }, 2500);
+    }, 2000);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fadeIn">
@@ -329,11 +391,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 {/* QR Code and Price Side-by-Side on Desktop */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-5 p-3 rounded-xl bg-black/40 border border-slate-800">
                   <div className="p-2.5 bg-white rounded-xl shadow-lg shrink-0">
-                    <div className="w-32 h-32 bg-slate-950 rounded-lg flex flex-col items-center justify-center p-2 text-center text-white relative">
-                      <QrCode className="w-20 h-20 text-emerald-400" />
-                      <span className="text-[9px] text-slate-300 mt-1 font-mono font-bold tracking-wider">
-                        PIX DYUSAR
-                      </span>
+                    <div className="w-32 h-32 bg-slate-100 rounded-lg flex flex-col items-center justify-center p-2 text-center text-black relative overflow-hidden">
+                      {order?.pixQrCodeBase64 ? (
+                        <img 
+                          src={`data:image/png;base64,${order.pixQrCodeBase64}`} 
+                          alt="QR Code Pix"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <QrCode className="w-20 h-20 text-emerald-600" />
+                      )}
                     </div>
                   </div>
 
@@ -344,10 +411,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     </p>
                     <p className="text-[11px] text-emerald-300/80 mt-1 flex items-center justify-center sm:justify-start gap-1">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>Despacho em 24h com prioridade na fila</span>
+                      <span>{order?.status === 'pending' ? 'Aguardando pagamento...' : 'Processando...'}</span>
                     </p>
                   </div>
                 </div>
+
+                {errorMessage && (
+                  <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[11px] flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
 
                 {/* Pix Copia e Cola Box */}
                 <div className="space-y-2 text-left">
@@ -361,7 +435,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       onClick={handleCopyPix}
                       className="p-3 rounded-xl bg-slate-950 border border-slate-700 text-[11px] font-mono text-slate-300 break-all select-all max-h-16 overflow-y-auto cursor-pointer hover:border-emerald-400 transition-colors"
                     >
-                      {pixPayload}
+                      {order?.pixQrCode || 'Gerando código...'}
                     </div>
                   </div>
 

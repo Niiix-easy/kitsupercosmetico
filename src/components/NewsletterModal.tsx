@@ -69,7 +69,7 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ onApplyCoupon 
     onApplyCoupon('PRIMEIRA5');
     handleClose();
     // Scroll to bundles
-    const el = document.getElementById('ofertas');
+    const el = document.getElementById('tratamento');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 

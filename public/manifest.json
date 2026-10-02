@@ -1,0 +1,22 @@
+{
+  "name": "Dyusar Cosméticos Haute Performance",
+  "short_name": "Dyusar",
+  "description": "Kit Super Reconstrução Capilar Profissional Dyusar",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0d10",
+  "theme_color": "#d4af37",
+  "icons": [
+    {
+      "src": "/images/logo-dyusar-horizontal.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/logo-dyusar-horizontal.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

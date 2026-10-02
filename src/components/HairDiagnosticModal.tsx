@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Sparkles, CheckCircle2, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
 import { PRODUCT_BUNDLES } from '../data/productData';
+import { db } from '../lib/firebase';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 
 interface HairDiagnosticModalProps {
   isOpen: boolean;
@@ -17,8 +19,26 @@ export const HairDiagnosticModal: React.FC<HairDiagnosticModalProps> = ({
   const [damageType, setDamageType] = useState('');
   const [chemicalType, setChemicalType] = useState('');
   const [hairThickness, setHairThickness] = useState('');
+  const [attemptId, setAttemptId] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  // Track quiz start
+  useEffect(() => {
+    if (isOpen && step === 1 && !attemptId) {
+      const startTracking = async () => {
+        try {
+          const docRef = await addDoc(collection(db, 'quiz_attempts'), {
+            createdAt: new Date().toISOString(),
+            completed: false,
+            purchasedAfter: false
+          });
+          setAttemptId(docRef.id);
+        } catch (error) {
+          console.error('Tracking error:', error);
+        }
+      };
+      startTracking();
+    }
+  }, [isOpen]);
 
   const handleRestart = () => {
     setStep(1);
@@ -27,10 +47,24 @@ export const HairDiagnosticModal: React.FC<HairDiagnosticModalProps> = ({
     setHairThickness('');
   };
 
-  const handleFinish = (bundleId: string) => {
+  const handleFinish = async (bundleId: string) => {
+    if (attemptId) {
+      try {
+        await updateDoc(doc(db, 'quiz_attempts', attemptId), {
+          completed: true,
+          purchasedAfter: true, // Marking as high intent for conversion tracking
+          recommendedBundle: bundleId,
+          updatedAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error('Update tracking error:', e);
+      }
+    }
     onSelectBundle(bundleId);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">

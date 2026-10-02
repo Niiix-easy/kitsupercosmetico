@@ -21,7 +21,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
 
   // Reliable, high-performance hair salon demonstration video
   // Professional hair salon keratin reconstruction demonstration
-  const VIDEO_URL = 'https://joy.videvo.net/videvo_files/video/free/2019-11/large_watermarked/190301_08_Salon_01_preview.mp4';
+  const VIDEO_URL = 'https://vjs.zencdn.net/v/oceans.mp4';
 
   const handleOpenAndPlay = () => {
     setIsVideoModalOpen(true);
@@ -70,13 +70,12 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
         <div className="relative aspect-video w-full overflow-hidden bg-black">
           <div 
             className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105 opacity-40"
-            style={{ backgroundImage: "url('/images/video-hero-poster-tiny.jpg')" }}
+            style={{ backgroundImage: "url('/images/video-hero-poster-tiny.webp')" }}
           />
-          <LazyLoadImage
+          <img
             src="/images/video-hero-poster.webp"
             alt="Vídeo de demonstração do Kit Dyusar no lavatório"
-            effect="blur"
-            wrapperClassName="w-full h-full"
+            loading="eager"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-90 relative z-10"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 z-10" />

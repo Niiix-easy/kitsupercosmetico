@@ -56,11 +56,10 @@ export const BeforeAfterSlider: React.FC = () => {
               
               {/* After Layer (Full underneath with shiny healthy hair photo) */}
               <div className="absolute inset-0 w-full h-full bg-black">
-                <LazyLoadImage
-                  src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.jpg' : '/images/hair-before-after-case2.jpg'}
+                <img
+                  src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
                   alt="Cabelo recuperado e reconstruído com Dyusar"
-                  effect="blur"
-                  wrapperClassName="w-full h-full"
+                  loading="lazy"
                   className="w-full h-full object-cover filter brightness-105 contrast-105"
                 />
                 
@@ -83,11 +82,10 @@ export const BeforeAfterSlider: React.FC = () => {
                 style={{ width: `${sliderPosition}%` }}
               >
                 <div className="w-[600px] sm:w-[700px] h-full relative max-w-none">
-                  <LazyLoadImage
-                    src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.jpg' : '/images/hair-before-after-case2.jpg'}
+                  <img
+                    src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
                     alt="Cabelo danificado antes do tratamento"
-                    effect="blur"
-                    wrapperClassName="w-full h-full"
+                    loading="lazy"
                     className="w-full h-full object-cover filter grayscale-[80%] contrast-[130%] brightness-[70%] sepia-[30%]"
                   />
                   {/* Damaged texture tint */}

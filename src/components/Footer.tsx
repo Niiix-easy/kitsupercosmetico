@@ -131,8 +131,9 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
           <div>
             <div className="flex flex-col mb-3">
               <img
-                src="/images/logo-dyusar-horizontal.png"
+                src="/images/logo-dyusar-horizontal.webp"
                 alt="Dyusar Cosméticos Profissionais"
+                loading="lazy"
                 className="h-8 w-auto object-contain filter brightness-110 mb-2 self-start"
               />
               <span className="text-[9px] uppercase tracking-[0.25em] text-[#d4af37]">
@@ -173,7 +174,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                 <a href="#ativos" className="hover:text-amber-300 transition-colors">Composição e Ativos Científicos</a>
               </li>
               <li>
-                <a href="#ofertas" className="hover:text-amber-300 transition-colors">Kits Promocionais com Desconto</a>
+                <a href="#tratamento" className="hover:text-amber-300 transition-colors">Protocolo dos 4 Passos</a>
               </li>
               <li>
                 <a href="#depoimentos" className="hover:text-amber-300 transition-colors">Depoimentos Reais de Clientes</a>

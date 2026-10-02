@@ -20,7 +20,7 @@ export const PRODUCT_BUNDLES: ProductBundle[] = [
       'Condicionador Super Reconstruction 300ml',
       'Máscara Super Reconstruction 300g'
     ],
-    image: '/images/Kit Home Care Reconstruçao.webp?v=luxury3'
+    image: '/images/Kit Home Care Reconstruçao.webp?v=luxury4'
   },
   {
     id: 'kit-profissional-1litro',
@@ -45,7 +45,7 @@ export const PRODUCT_BUNDLES: ProductBundle[] = [
       'Condicionador Super Reconstruction 1 Litro',
       'Máscara Super Reconstruction 1kg'
     ],
-    image: '/images/Kit Profissional 1 Litro.webp?v=luxury3'
+    image: '/images/Kit Profissional 1 Litro.webp?v=luxury4'
   },
   {
     id: 'kit-profissional-completo',
@@ -72,7 +72,7 @@ export const PRODUCT_BUNDLES: ProductBundle[] = [
       'Máscara Super Reconstruction 1kg',
       'Queratina Líquida 500ml'
     ],
-    image: '/images/Kit Profissional Completo.webp?v=luxury3'
+    image: '/images/Kit Profissional Completo.webp?v=luxury4'
   }
 ];
 
@@ -150,7 +150,7 @@ export const REVIEWS_DATA: Review[] = [
     date: 'Há 3 dias',
     verified: true,
     hasPhoto: true,
-    photoUrl: '/images/hair-before-after-case1.jpg'
+    photoUrl: '/images/hair-before-after-case1.webp'
   },
   {
     id: 'rev-2',
@@ -163,7 +163,7 @@ export const REVIEWS_DATA: Review[] = [
     date: 'Há 5 dias',
     verified: true,
     hasPhoto: true,
-    photoUrl: '/images/hair-before-after-case2.jpg',
+    photoUrl: '/images/hair-before-after-case2.webp',
     salonProfessional: true
   },
   {
@@ -215,7 +215,7 @@ export const PURCHASE_NOTIFICATIONS: PurchaseNotification[] = [
     state: 'SP',
     bundleTitle: 'Kit Profissional 1 Litro',
     timeAgo: 'há 2 minutos',
-    photoUrl: '/images/avatar-blonde.jpg'
+    photoUrl: '/images/avatar-blonde.webp'
   },
   {
     id: 'n-2',
@@ -224,7 +224,7 @@ export const PURCHASE_NOTIFICATIONS: PurchaseNotification[] = [
     state: 'MG',
     bundleTitle: 'Kit Profissional Completo',
     timeAgo: 'há 4 minutos',
-    photoUrl: '/images/avatar-brunette.jpg'
+    photoUrl: '/images/avatar-brunette.webp'
   },
   {
     id: 'n-3',
@@ -233,7 +233,7 @@ export const PURCHASE_NOTIFICATIONS: PurchaseNotification[] = [
     state: 'PR',
     bundleTitle: 'Kit Profissional 1 Litro',
     timeAgo: 'há 7 minutos',
-    photoUrl: '/images/avatar-salon.jpg'
+    photoUrl: '/images/avatar-salon.webp'
   },
   {
     id: 'n-4',
@@ -242,7 +242,7 @@ export const PURCHASE_NOTIFICATIONS: PurchaseNotification[] = [
     state: 'RS',
     bundleTitle: 'Kit Home Care Reconstrução',
     timeAgo: 'há 11 minutos',
-    photoUrl: '/images/avatar-brunette.jpg'
+    photoUrl: '/images/avatar-brunette.webp'
   }
 ];
 

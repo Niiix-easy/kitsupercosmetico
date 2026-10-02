@@ -137,7 +137,7 @@ export const ComparisonTable: React.FC = () => {
             💡 <strong>Conclusão Econômica:</strong> Um único kit Dyusar equivale a mais de <strong className="text-amber-300">R$ 5.000,00 em tratamentos profissionais</strong> de salão, com a comodidade de aplicar no seu próprio chuveiro.
           </p>
           <a
-            href="#ofertas"
+            href="#tratamento"
             className="px-4 py-2 rounded-lg bg-amber-400 text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shrink-0 whitespace-nowrap"
           >
             Aproveitar Lote Promocional

@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "Sales record with payment status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "bundleId": { "type": "string" },
+        "bundleTitle": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "paid", "cancelled"] },
+        "paymentId": { "type": "string" },
+        "pixQrCode": { "type": "string" },
+        "pixQrCodeBase64": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "bundleId", "amount", "status", "createdAt"]
+    },
+    "QuizAttempt": {
+      "title": "Quiz Attempt",
+      "description": "User interaction with the diagnostic quiz",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "purchasedAfter": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "completed", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "System administrator for dashboard access",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Sales transactions"
+    },
+    "/quiz_attempts/{attemptId}": {
+      "schema": { "$ref": "#/entities/QuizAttempt" },
+      "description": "Quiz interaction logs"
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Whitelist for admin access"
+    }
+  }
+}

@@ -28,6 +28,9 @@ import { AnimatedSection } from './components/AnimatedSection';
 import { VideoTestimonials } from './components/VideoTestimonials';
 import { PushNotificationManager } from './components/PushNotificationManager';
 import { WhatsAppButton } from './components/WhatsAppButton';
+import { AdminDashboard } from './components/AdminDashboard';
+import { AdminLoginModal } from './components/AdminLoginModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { PRODUCT_BUNDLES } from './data/productData';
 import { CartItem, ProductBundle } from './types';
 import { trackEvent } from './utils/pixelTracking';
@@ -47,6 +50,8 @@ export default function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [couponApplied, setCouponApplied] = useState('');
   const [isAssetsLoading, setIsAssetsLoading] = useState(true);
@@ -65,10 +70,10 @@ export default function App() {
 
     // 2. Preload critical images to eliminate layout shift and show seamless luxury experience
     const criticalImages = [
-      '/images/Kit Profissional Completo.png?v=luxury2',
-      '/images/Kit Profissional 1 Litro.png?v=luxury2',
-      '/images/Kit Home Care Reconstruçao.png?v=luxury2',
-      '/images/hair-salon-professional.jpg'
+      '/images/Kit Profissional Completo.webp?v=luxury2',
+      '/images/Kit Profissional 1 Litro.webp?v=luxury2',
+      '/images/Kit Home Care Reconstruçao.webp?v=luxury2',
+      '/images/hair-salon-professional.webp'
     ];
 
     let loadedCount = 0;
@@ -84,11 +89,26 @@ export default function App() {
     });
 
     const timer = setTimeout(() => setIsAssetsLoading(false), 1500);
+    
+    // Hidden admin access shortcut (Alt + A)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key === 'a') {
+        setIsAdminLoginOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('hashchange', handleHashAndSEO);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  const handleAdminLoginSuccess = () => {
+    setIsAdminLoginOpen(false);
+    setIsAdminOpen(true);
+  };
 
   const handleApplyNewsletterCoupon = (code: string) => {
     setCouponApplied(code);
@@ -240,7 +260,8 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-[#0c0d10] text-[#f4f4f5] flex flex-col font-sans-body">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-[#0c0d10] text-[#f4f4f5] flex flex-col font-sans-body">
       {/* Global Top Loading Bar Indicator */}
       {isAssetsLoading && (
         <div className="fixed top-0 left-0 right-0 z-50 h-[3px] bg-slate-900 overflow-hidden pointer-events-none">
@@ -295,7 +316,7 @@ export default function App() {
           <SalonShowcaseSection onCtaClick={() => handleSelectBundleById('kit-profissional-1litro')} />
         </AnimatedSection>
 
-        {/* Package Tiers & Bundles */}
+        {/* Package Tiers & Bundles (Virtualized) */}
         <AnimatedSection>
           <BundleSelector 
             onSelectBundle={handleSelectBundle} 
@@ -372,6 +393,18 @@ export default function App() {
 
       {/* Floating WhatsApp for Direct Support */}
       <WhatsAppButton />
+
+      {/* Admin Panel Components */}
+      {isAdminOpen && (
+        <AdminDashboard onClose={() => setIsAdminOpen(false)} />
+      )}
+
+      <AdminLoginModal 
+        isOpen={isAdminLoginOpen} 
+        onClose={() => setIsAdminLoginOpen(false)}
+        onLoginSuccess={handleAdminLoginSuccess}
+      />
     </div>
+    </ErrorBoundary>
   );
 }

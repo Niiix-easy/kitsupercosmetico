@@ -38,9 +38,9 @@ export const FloatingMobileCTA: React.FC<FloatingMobileCTAProps> = ({ onBuyClick
 
       <button
         onClick={onBuyClick}
-        className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black font-extrabold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-md hover:brightness-110 active:scale-95 transition-all"
+        className="px-4 py-2 rounded-lg bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black font-extrabold text-[11px] uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-md hover:brightness-110 active:scale-95 transition-all animate-pulse"
       >
-        <span>Garantir</span>
+        <span>Garantir Oferta</span>
         <ArrowRight className="w-3.5 h-3.5" />
       </button>
     </div>
