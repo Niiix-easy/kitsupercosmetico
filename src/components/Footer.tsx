@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Truck, Lock, RotateCcw, Award, CheckCircle, Package, Crown, Sparkles, ArrowRight, Check, Mail, Coins, Gift, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Truck, Lock, RotateCcw, Award, CheckCircle, Package, Crown, Sparkles, ArrowRight, Check, Mail, Coins, Gift } from 'lucide-react';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface FooterProps {
   onOpenTracking: () => void;
@@ -209,7 +210,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 transition-all font-semibold text-xs"
                 >
-                  <MessageCircle className="w-4 h-4 fill-[#25D366]/20 text-[#25D366] shrink-0" />
+                  <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
                   <span>(11) 99999-9999</span>
                 </a>
               </div>

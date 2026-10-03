@@ -150,20 +150,20 @@ export const REVIEWS_DATA: Review[] = [
     date: 'Há 3 dias',
     verified: true,
     hasPhoto: true,
-    photoUrl: '/images/hair-before-after-case1.webp'
+    photoUrl: '/images/hair-before-after-case1.webp?v=orig_v1'
   },
   {
     id: 'rev-2',
     name: 'Juliana Mendes Santos',
     location: 'Curitiba, PR',
-    hairType: 'Morena Iluminada',
+    hairType: 'Cabelo Iluminado com Mechas',
     rating: 5,
     title: 'Adotei no meu salão e o faturamento disparou!',
     comment: 'Como profissional com mais de 12 anos de bancada, raramente vejo um produto com ação tão imediata no lavatório. Quando a cliente chega com o fio sem elasticidade pós-mechas, aplico o protocolo Dyusar de 4 passos. O cabelo sai selado, com brilho espelhado e sem pontas duplas. O kit se paga logo nas primeiras aplicações.',
     date: 'Há 5 dias',
     verified: true,
     hasPhoto: true,
-    photoUrl: '/images/hair-before-after-case2.webp',
+    photoUrl: '/images/hair-before-after-case2.webp?v=img12_v3',
     salonProfessional: true
   },
   {
@@ -258,9 +258,9 @@ export const BEFORE_AFTER_CASES = [
   },
   {
     id: 'case-2',
-    title: 'Morena Iluminada com Porosidade Extrema e Pontas Duplas',
+    title: 'Cabelo Iluminado com Porosidade Extrema e Pontas Duplas',
     badge: 'Porosidade Alta e Frizz',
-    hairProfile: 'Cabelo ondulado 2B com luzes mel e uso diário de chapinha e secador',
+    hairProfile: 'Cabelo com luzes e mechas iluminadas tom mel/caramelo, ressecado por uso contínuo de chapinha e secador',
     sessionCount: '2 semanas de cronograma capilar',
     diagnostic: 'Cabelo opaco, pontas espigadas com nós de fada e alta perda de umidade natural para o ar.',
     result: 'Brilho espelhado 3D duradouro, emoliência sedosa e blindagem térmica contra calor de até 230°C.'

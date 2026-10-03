@@ -1,6 +1,6 @@
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 export const WhatsAppButton: React.FC = () => {
   const phoneNumber = '5511999999999'; // Simulated commercial number
@@ -26,7 +26,7 @@ export const WhatsAppButton: React.FC = () => {
         className="relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-[#25D366] text-white rounded-full shadow-[0_10px_40px_-10px_rgba(37,211,102,0.6)] hover:scale-110 active:scale-95 transition-all duration-300 group overflow-hidden"
         aria-label="Fale conosco pelo WhatsApp"
       >
-        <MessageCircle className="w-8 h-8 sm:w-9 sm:h-9 fill-current" />
+        <WhatsAppIcon className="w-8 h-8 sm:w-9 sm:h-9" />
         
         {/* Glow Effect */}
         <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />

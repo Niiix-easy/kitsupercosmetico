@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins, MessageCircle } from 'lucide-react';
+import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins } from 'lucide-react';
 import { useLoyaltyPoints } from '../hooks/useLoyaltyPoints';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface NavbarProps {
   cartCount: number;
@@ -58,7 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           rel="noopener noreferrer"
           className="hidden sm:inline-flex items-center gap-1 font-bold text-black hover:underline shrink-0 bg-black/10 px-2 py-0.5 rounded"
         >
-          <MessageCircle className="w-3.5 h-3.5 fill-black" />
+          <WhatsAppIcon className="w-3.5 h-3.5" />
           <span>Suporte WhatsApp</span>
         </a>
       </div>

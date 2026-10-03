@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, X, Package, Truck, CheckCircle2, Clock, MapPin, ArrowRight, ShieldCheck, MessageCircle } from 'lucide-react';
+import { Search, X, Package, Truck, CheckCircle2, Clock, MapPin, ArrowRight, ShieldCheck } from 'lucide-react';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface OrderTrackingModalProps {
   isOpen: boolean;
@@ -217,7 +218,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, 
               rel="noopener noreferrer"
               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1.5 shrink-0 transition-colors"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <WhatsAppIcon className="w-3.5 h-3.5" />
               <span>WhatsApp</span>
             </a>
           </div>

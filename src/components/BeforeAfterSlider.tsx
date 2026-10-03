@@ -57,10 +57,10 @@ export const BeforeAfterSlider: React.FC = () => {
               {/* After Layer (Full underneath with shiny healthy hair photo) */}
               <div className="absolute inset-0 w-full h-full bg-black">
                 <img
-                  src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
+                  src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp?v=orig_v1' : '/images/hair-before-after-case2.webp?v=img12_v3'}
                   alt="Cabelo recuperado e reconstruído com Dyusar"
                   loading="lazy"
-                  className="w-full h-full object-cover filter brightness-105 contrast-105"
+                  className="w-full h-full object-contain filter brightness-105 contrast-105"
                 />
                 
                 {/* Subtle shine overlay */}
@@ -81,12 +81,12 @@ export const BeforeAfterSlider: React.FC = () => {
                 className="absolute inset-0 h-full overflow-hidden border-r-2 border-white transition-none bg-black"
                 style={{ width: `${sliderPosition}%` }}
               >
-                <div className="w-[600px] sm:w-[700px] h-full relative max-w-none">
+                <div className="absolute inset-0 w-full h-full min-w-full">
                   <img
-                    src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
+                    src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp?v=orig_v1' : '/images/hair-before-after-case2.webp?v=img12_v3'}
                     alt="Cabelo danificado antes do tratamento"
                     loading="lazy"
-                    className="w-full h-full object-cover filter grayscale-[80%] contrast-[130%] brightness-[70%] sepia-[30%]"
+                    className="w-full h-full object-contain filter grayscale-[80%] contrast-[130%] brightness-[70%] sepia-[30%]"
                   />
                   {/* Damaged texture tint */}
                   <div className="absolute inset-0 bg-red-950/25 mix-blend-multiply" />
