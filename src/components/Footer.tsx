@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Truck, Lock, RotateCcw, Award, CheckCircle, Package, Crown, Sparkles, ArrowRight, Check, Mail, Coins, Gift } from 'lucide-react';
+import { ShieldCheck, Truck, Lock, RotateCcw, Award, CheckCircle, Package, Crown, Sparkles, ArrowRight, Check, Mail, Coins, Gift, MessageCircle } from 'lucide-react';
 
 interface FooterProps {
   onOpenTracking: () => void;
@@ -201,10 +201,18 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                 <strong className="text-slate-300 block">E-mail de Suporte:</strong>
                 contato@dyusar.com.br
               </p>
-              <p>
-                <strong className="text-slate-300 block">WhatsApp Oficial:</strong>
-                (11) 99999-9999
-              </p>
+              <div>
+                <strong className="text-slate-300 block mb-1">WhatsApp de Suporte:</strong>
+                <a
+                  href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20suporte%20sobre%20o%20Kit%20Dyusar"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 transition-all font-semibold text-xs"
+                >
+                  <MessageCircle className="w-4 h-4 fill-[#25D366]/20 text-[#25D366] shrink-0" />
+                  <span>(11) 99999-9999</span>
+                </a>
+              </div>
               <div className="pt-2">
                 <span className="inline-block px-2.5 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[11px] font-semibold">
                   Garantia de 7 Dias Incondicional

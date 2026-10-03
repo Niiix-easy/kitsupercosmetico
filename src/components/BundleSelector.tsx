@@ -1,17 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { motion, useScroll, useTransform, useSpring, useMotionValue, MotionValue } from 'framer-motion';
-import * as ReactWindow from 'react-window';
-import * as AutoSizerModule from 'react-virtualized-auto-sizer';
 import { PRODUCT_BUNDLES } from '../data/productData';
 import { Check, Sparkles, Gift, Truck, ArrowRight, ShieldCheck, ZoomIn, X, Upload, Camera, RotateCcw, AlertTriangle, CheckCircle2, Zap, Scale, Crown, Award as AwardIcon } from 'lucide-react';
 import { ProductBundle } from '../types';
 import { useKitImages } from '../utils/kitImageStorage';
-
-const ReactWindowObj: any = ReactWindow;
-const AutoSizerObj: any = AutoSizerModule;
-const VirtualizedList = ReactWindowObj.FixedSizeList || ReactWindowObj.default?.FixedSizeList || ReactWindowObj;
-const VirtualizedAutoSizer = AutoSizerObj.default || AutoSizerObj.AutoSizer || AutoSizerObj;
 
 const BUNDLE_SPECS: Record<string, any> = {
   'kit-home-care': {
@@ -426,79 +419,6 @@ const BUNDLE_BADGES: Record<string, { leftBadge: string; discount: string; popul
   }
 };
 
-interface VirtualRowProps {
-  index: number;
-  style: React.CSSProperties;
-  data: {
-    items: any[];
-    columns: number;
-    images: Record<string, string>;
-    stockUnits: Record<string, number>;
-    loadedImages: Record<string, boolean>;
-    isProcessingUpload: string | null;
-    dragOverBundleId: string | null;
-    smoothParallaxY: MotionValue<number>;
-    triggerHaptic: () => void;
-    onSelectBundle: (bundle: ProductBundle) => void;
-    onQuickBuy: (bundle: ProductBundle) => void;
-    handleZoom: (url: string, title: string) => void;
-    handleCompare: (id: string) => void;
-    handleFileSelect: (bundleId: string, file: File) => void;
-    setDragOverBundleId: (id: string | null) => void;
-    onImageLoad: (id: string) => void;
-  };
-}
-
-const VirtualRow: React.FC<VirtualRowProps> = ({ index, style, data }) => {
-  const { items, columns, ...props } = data;
-  const startIndex = index * columns;
-  const rowItems = items.slice(startIndex, startIndex + columns);
-
-  return (
-    <div 
-      style={{ 
-        ...style, 
-        display: 'grid', 
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gap: '2rem',
-        paddingLeft: 'max(1rem, (100vw - 1152px) / 2)',
-        paddingRight: 'max(1rem, (100vw - 1152px) / 2)',
-        width: '100%',
-        boxSizing: 'border-box'
-      }}
-      className="max-w-7xl mx-auto"
-    >
-      {rowItems.map((bundle, i) => (
-        <div key={bundle.id} className="h-full">
-          <BundleCard
-            bundle={bundle}
-            index={startIndex + i}
-            currentImg={props.images[bundle.id] || bundle.image}
-            leftBadge={bundle.leftBadge}
-            discount={bundle.discount}
-            popularBanner={bundle.popularBanner}
-            isPopular={!!bundle.popular}
-            unitsLeft={props.stockUnits[bundle.id]}
-            isProfessional={bundle.isProfessional}
-            smoothParallaxY={props.smoothParallaxY}
-            triggerHaptic={props.triggerHaptic}
-            onSelect={props.onSelectBundle}
-            onQuickBuy={props.onQuickBuy}
-            onZoom={props.handleZoom}
-            onCompare={props.handleCompare}
-            handleFileSelect={props.handleFileSelect}
-            isUploading={props.isProcessingUpload === bundle.id}
-            dragOverId={props.dragOverBundleId}
-            setDragOverId={props.setDragOverBundleId}
-            isImageLoaded={!!props.loadedImages[bundle.id]}
-            onImageLoad={props.onImageLoad}
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
-
 export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, onQuickBuy }) => {
   const [zoomImage, setZoomImage] = useState<{ url: string; title: string } | null>(null);
   const [comparingBundleId, setComparingBundleId] = useState<string | null>(null);
@@ -665,69 +585,44 @@ export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, 
   }), [enrichedBundles, images, stockUnits, loadedImages, isProcessingUpload, dragOverBundleId, smoothParallaxY, triggerHaptic, onSelectBundle, onQuickBuy, handleZoom, handleCompare, handleFileSelect, setDragOverBundleId, onImageLoad]);
 
   return (
-    <section id="ofertas" ref={sectionRef} className="py-16 lg:py-24 bg-[#0c0d10] relative">
+    <section id="ofertas" ref={sectionRef} className="py-12 lg:py-16 bg-[#0c0d10] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto mb-10"
-        >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-semibold mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Condição Exclusiva de Lote Oficial Dyusar</span>
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white font-serif-display">
-            Escolha o Seu Kit Super Reconstrução
-          </h2>
-          <p className="text-sm sm:text-base text-slate-300 mt-3 font-sans-body">
-            Garantia incondicional de 7 dias com devolução integral e Frete Grátis com envio prioritário para todo o Brasil.
-          </p>
-        </motion.div>
+        {/* Responsive Bundle Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto">
+          {enrichedBundles.map((bundle, index) => {
+            const currentImg = images[bundle.id] || bundle.image;
+            const unitsLeft = stockUnits[bundle.id];
+            const isUploading = isProcessingUpload === bundle.id;
+            const isImageLoaded = !!loadedImages[bundle.id];
 
-        {/* Virtualized Bundle Cards List */}
-        <div className="w-full min-h-[600px] max-w-7xl mx-auto overflow-visible">
-          <VirtualizedAutoSizer disableHeight>
-            {({ width }: { width: number }) => {
-              const columns = width >= 768 ? 3 : 1;
-              const rowCount = Math.ceil(enrichedBundles.length / columns);
-              const rowHeight = columns === 3 ? 880 : 920; // Estimated height per row based on card content
-
-              return (
-                <VirtualizedList
-                  height={rowHeight * Math.min(rowCount, 3) + 40} // Limit initial height but allow scrolling
-                  itemCount={rowCount}
-                  itemSize={rowHeight}
-                  width={width}
-                  itemData={{ ...listData, columns }}
-                  overscanCount={2}
-                  className="no-scrollbar overflow-x-hidden"
-                  style={{ overflow: 'visible' }} // Allow shadows to overflow
-                >
-                  {VirtualRow}
-                </VirtualizedList>
-              );
-            }}
-          </VirtualizedAutoSizer>
-        </div>
-
-        {/* Security & Warranty Trust Footer */}
-        <div className="mt-12 max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-slate-400 pt-6 border-t border-slate-800/80">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Compra 100% Segura e Criptografada SSL</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>7 Dias de Garantia Incondicional</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Truck className="w-4 h-4 text-sky-400" />
-            <span>Entrega Garantida com Seguro de Carga</span>
-          </div>
+            return (
+              <BundleCard
+                key={bundle.id}
+                bundle={bundle}
+                index={index}
+                currentImg={currentImg}
+                leftBadge={bundle.leftBadge}
+                discount={bundle.discount}
+                popularBanner={bundle.popularBanner}
+                isPopular={!!bundle.popular}
+                unitsLeft={unitsLeft}
+                isProfessional={bundle.isProfessional}
+                smoothParallaxY={smoothParallaxY}
+                triggerHaptic={triggerHaptic}
+                onSelect={onSelectBundle}
+                onQuickBuy={onQuickBuy}
+                onZoom={handleZoom}
+                onCompare={handleCompare}
+                handleFileSelect={handleFileSelect}
+                isUploading={isUploading}
+                dragOverId={dragOverBundleId}
+                setDragOverId={setDragOverBundleId}
+                isImageLoaded={isImageLoaded}
+                onImageLoad={onImageLoad}
+              />
+            );
+          })}
         </div>
 
       </div>

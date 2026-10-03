@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins } from 'lucide-react';
+import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins, MessageCircle } from 'lucide-react';
 import { useLoyaltyPoints } from '../hooks/useLoyaltyPoints';
 
 interface NavbarProps {
@@ -45,11 +45,22 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
   return (
     <header className={`sticky top-0 z-40 w-full bg-[#0c0d10]/95 backdrop-blur-md border-b border-amber-500/20 transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       {/* Slim Top Announcement Bar (<=40px) */}
-      <div className="bg-gradient-to-r from-[#91711e] via-[#d4af37] to-[#805e13] px-3 py-1.5 text-center text-[11px] sm:text-xs font-semibold text-black tracking-wide flex items-center justify-center gap-2 overflow-hidden">
-        <span className="animate-pulse">🚨</span>
-        <span className="truncate">
-          <strong>LOTE EXCLUSIVO:</strong> Até 40% OFF + Frete Grátis para todo o Brasil | Despacho em 24h
-        </span>
+      <div className="bg-gradient-to-r from-[#91711e] via-[#d4af37] to-[#805e13] px-3 py-1.5 text-center text-[11px] sm:text-xs font-semibold text-black tracking-wide flex items-center justify-between gap-2 overflow-hidden max-w-7xl mx-auto">
+        <div className="flex items-center gap-1.5 truncate">
+          <span className="animate-pulse">🚨</span>
+          <span className="truncate">
+            <strong>LOTE EXCLUSIVO:</strong> Até 40% OFF + Frete Grátis | Despacho em 24h
+          </span>
+        </div>
+        <a
+          href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20falar%20com%20o%20suporte%20Dyusar"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden sm:inline-flex items-center gap-1 font-bold text-black hover:underline shrink-0 bg-black/10 px-2 py-0.5 rounded"
+        >
+          <MessageCircle className="w-3.5 h-3.5 fill-black" />
+          <span>Suporte WhatsApp</span>
+        </a>
       </div>
 
       {/* Top Bar Contract (3 Zones) */}
