@@ -27,6 +27,9 @@ export const SalonShowcaseSection: React.FC<SalonShowcaseSectionProps> = ({ onCt
                 src="/images/hair-salon-professional.webp"
                 alt="Profissional aplicando o tratamento Dyusar em salão de beleza"
                 loading="lazy"
+                decoding="async"
+                width="600"
+                height="400"
                 onLoad={() => setIsImgLoaded(true)}
                 className={`w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-all duration-500 filter brightness-95 ${
                   isImgLoaded ? 'opacity-100' : 'opacity-0'

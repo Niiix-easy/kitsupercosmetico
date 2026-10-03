@@ -249,21 +249,25 @@ export const PURCHASE_NOTIFICATIONS: PurchaseNotification[] = [
 export const BEFORE_AFTER_CASES = [
   {
     id: 'case-1',
-    title: 'Recuperação de Corte Químico Pós-Descoloração 10.0',
-    badge: 'Corte Químico Crítico',
-    hairProfile: 'Loiro claríssimo danificado por mechas sucessivas e pó descolorante',
-    sessionCount: '1 única aplicação completa no lavatório',
-    diagnostic: 'Fio emborrachado com perda de elasticidade, rompendo-se com leve tração dos dedos e cutículas completamente abertas.',
-    result: 'Interrupção instantânea do efeito chiclete, reposição da massa cortical interna e selagem com alinhamento das escamas capilares.'
-  },
-  {
-    id: 'case-2',
     title: 'Cabelo Iluminado com Porosidade Extrema e Pontas Duplas',
     badge: 'Porosidade Alta e Frizz',
     hairProfile: 'Cabelo com luzes e mechas iluminadas tom mel/caramelo, ressecado por uso contínuo de chapinha e secador',
     sessionCount: '2 semanas de cronograma capilar',
     diagnostic: 'Cabelo opaco, pontas espigadas com nós de fada e alta perda de umidade natural para o ar.',
-    result: 'Brilho espelhado 3D duradouro, emoliência sedosa e blindagem térmica contra calor de até 230°C.'
+    result: 'Brilho espelhado 3D duradouro, emoliência sedosa e blindagem térmica contra calor de até 230°C.',
+    beforeImage: '/images/avatar-brunette.jpg',
+    afterImage: '/images/brunette-hair-case.png?v=img0123_v1'
+  },
+  {
+    id: 'case-2',
+    title: 'Recuperação de Corte Químico Pós-Descoloração 10.0',
+    badge: 'Corte Químico Crítico',
+    hairProfile: 'Loiro claríssimo danificado por mechas sucessivas e pó descolorante',
+    sessionCount: '1 única aplicação completa no lavatório',
+    diagnostic: 'Fio emborrachado com perda de elasticidade, rompendo-se com leve tração dos dedos e cutículas completamente abertas.',
+    result: 'Interrupção instantânea do efeito chiclete, reposição da massa cortical interna e selagem com alinhamento das escamas capilares.',
+    beforeImage: '/images/avatar-blonde.jpg',
+    afterImage: '/images/blonde-hair-case.png?v=img0123_v1'
   }
 ];
 

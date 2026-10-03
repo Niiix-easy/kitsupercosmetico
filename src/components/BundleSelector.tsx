@@ -220,6 +220,7 @@ const BundleCard = memo(({
               src={currentImg}
               alt={bundle.title}
               loading="lazy"
+              decoding="async"
               width="320"
               height="320"
               onLoad={() => onImageLoad(bundle.id)}
@@ -259,16 +260,6 @@ const BundleCard = memo(({
               <span>Comparar Rendimento</span>
             </button>
           </div>
-
-          {/* Drag & Drop Overlay Indicator */}
-          {isDraggingOver && (
-            <div className="absolute inset-0 bg-emerald-950/90 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-emerald-300 z-30 animate-fadeIn">
-              <Upload className="w-8 h-8 animate-bounce text-emerald-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-center px-4">
-                Solte a imagem quadrada (1:1) aqui para atualizar
-              </span>
-            </div>
-          )}
 
           {/* Floating Item Count Tag */}
           <span 
@@ -586,6 +577,56 @@ export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, 
 
   return (
     <section id="ofertas" ref={sectionRef} className="py-12 lg:py-16 bg-[#0c0d10] relative">
+      {/* Schema.org Product List JSON-LD Structured Data for Google Rich Snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            'name': 'Kits de Reconstrução Capilar Dyusar Cosméticos',
+            'numberOfItems': PRODUCT_BUNDLES.length,
+            'itemListElement': PRODUCT_BUNDLES.map((bundle, idx) => ({
+              '@type': 'ListItem',
+              'position': idx + 1,
+              'item': {
+                '@type': 'Product',
+                'name': bundle.title,
+                'image': [
+                  typeof window !== 'undefined'
+                    ? `${window.location.origin}${images[bundle.id] || bundle.image}`
+                    : bundle.image
+                ],
+                'description': `${bundle.badge} - ${bundle.tagline}`,
+                'sku': bundle.id,
+                'brand': {
+                  '@type': 'Brand',
+                  'name': 'Dyusar Cosméticos'
+                },
+                'offers': {
+                  '@type': 'Offer',
+                  'url': typeof window !== 'undefined' ? `${window.location.origin}/#${bundle.id}` : `/#${bundle.id}`,
+                  'priceCurrency': 'BRL',
+                  'price': bundle.price.toFixed(2),
+                  'priceValidUntil': '2027-12-31',
+                  'availability': 'https://schema.org/InStock',
+                  'itemCondition': 'https://schema.org/NewCondition',
+                  'seller': {
+                    '@type': 'Organization',
+                    'name': 'Dyusar Cosméticos'
+                  }
+                },
+                'aggregateRating': {
+                  '@type': 'AggregateRating',
+                  'ratingValue': '4.9',
+                  'reviewCount': '1420'
+                }
+              }
+            }))
+          })
+        }}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Responsive Bundle Cards Grid */}

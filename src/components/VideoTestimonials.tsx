@@ -62,7 +62,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
       salon: 'Ferraz Hair Concept',
       quote: 'O teste de elasticidade que fiz após platinar um cabelo fragilizado impressionou todos no salão. A reposição com Ojon e Murumuru entrega maleabilidade e brilho espelhado 3D.',
       videoUrl: 'https://media.w3.org/2010/05/sintel/trailer.mp4',
-      poster: '/images/hair-before-after-case2.webp',
+      poster: '/images/hair-before-after-case2.webp?v=creative3_final',
       highlightTag: 'Teste de Elasticidade Imediato',
       rating: 5
     },

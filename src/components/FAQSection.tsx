@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FAQ_DATA } from '../data/productData';
-import { ChevronDown, HelpCircle } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
 
 export const FAQSection: React.FC = () => {
@@ -10,8 +10,28 @@ export const FAQSection: React.FC = () => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
 
+  // Generate Schema.org JSON-LD FAQPage structured data for search engine optimization
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': FAQ_DATA.map((item) => ({
+      '@type': 'Question',
+      'name': item.question,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': item.answer
+      }
+    }))
+  };
+
   return (
     <section id="faq" className="py-16 lg:py-24 bg-[#0f1015] border-t border-amber-500/20 relative">
+      {/* Schema.org FAQPage Structured Data (JSON-LD) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

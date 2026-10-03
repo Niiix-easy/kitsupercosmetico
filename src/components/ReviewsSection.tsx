@@ -287,7 +287,7 @@ export const ReviewsSection: React.FC = () => {
                     <div className="mt-3 flex items-center gap-2">
                       <div className="w-16 h-16 rounded-lg overflow-hidden border border-amber-500/30 shrink-0">
                         <img
-                          src={rev.id === 'rev-1' ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
+                          src={rev.id === 'rev-1' ? '/images/hair-before-after-case1.webp?v=orig_v1' : '/images/hair-before-after-case2.webp?v=creative3_final'}
                           alt="Resultado de cabelo"
                           loading="lazy"
                           width="64"

@@ -24,6 +24,7 @@ import { PurchaseNotificationToast } from './components/PurchaseNotificationToas
 import { FloatingMobileCTA } from './components/FloatingMobileCTA';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { NewsletterModal } from './components/NewsletterModal';
+import { RecurringNewsletterToast } from './components/RecurringNewsletterToast';
 import { AnimatedSection } from './components/AnimatedSection';
 import { VideoTestimonials } from './components/VideoTestimonials';
 import { PushNotificationManager } from './components/PushNotificationManager';
@@ -36,6 +37,7 @@ import { CartItem, ProductBundle } from './types';
 import { trackEvent } from './utils/pixelTracking';
 import { updateBundleMetaTags } from './utils/dynamicMetaTags';
 import { sendOrderUpdateNotification } from './utils/pushNotifications';
+import { initPerformanceMonitoring } from './utils/performanceMonitor';
 
 export default function App() {
   // Cart state initialized with default popular bundle ready for quick checkout if desired
@@ -67,6 +69,9 @@ export default function App() {
 
     handleHashAndSEO();
     window.addEventListener('hashchange', handleHashAndSEO);
+
+    // Initialize LCP and Core Web Vitals performance monitoring
+    initPerformanceMonitoring();
 
     // 2. Preload critical images to eliminate layout shift and show seamless luxury experience
     const criticalImages = [
@@ -113,7 +118,8 @@ export default function App() {
   const handleApplyNewsletterCoupon = (code: string) => {
     setCouponApplied(code);
     const subtotal = cartItems.reduce((acc, item) => acc + (item.bundle.price * item.quantity), 0);
-    setDiscountAmount(subtotal * 0.05); // 5% discount
+    const discountRate = code === 'PRIMEIRA10' ? 0.10 : 0.05;
+    setDiscountAmount(subtotal * discountRate);
     setIsCartOpen(true);
   };
 
@@ -384,6 +390,12 @@ export default function App() {
 
       {/* Subtle Inactivity 15-second Newsletter Modal */}
       <NewsletterModal onApplyCoupon={handleApplyNewsletterCoupon} />
+
+      {/* Recurring 10% Newsletter Toast Pop-up */}
+      <RecurringNewsletterToast 
+        onApplyCoupon={handleApplyNewsletterCoupon}
+        isModalOpen={isCartOpen || isCheckoutOpen || isQuizOpen || isTrackingOpen || isAdminOpen || isAdminLoginOpen}
+      />
 
       {/* Real-time Purchase Social Proof Popups */}
       <PurchaseNotificationToast />

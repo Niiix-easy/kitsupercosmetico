@@ -1,44 +1,114 @@
-import React, { useState } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import React, { useState, useRef, useEffect } from 'react';
 import { BEFORE_AFTER_CASES } from '../data/productData';
-import { Check, Sparkles, AlertTriangle, ArrowLeftRight } from 'lucide-react';
+import { Check, AlertTriangle, Camera, Upload, RotateCcw, ImageIcon, Loader2 } from 'lucide-react';
+import {
+  compressImage,
+  saveCustomCaseImage,
+  loadCustomCaseImages,
+  removeCustomCaseImage
+} from '../utils/imageStorage';
 
 export const BeforeAfterSlider: React.FC = () => {
   const [selectedCaseIndex, setSelectedCaseIndex] = useState(0);
-  const [sliderPosition, setSliderPosition] = useState(50); // percentage 0 to 100
+  const [customImages, setCustomImages] = useState<Record<number, string>>({});
+  const [showGallery, setShowGallery] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Load custom saved images safely from IndexedDB / Storage on mount
+  useEffect(() => {
+    loadCustomCaseImages().then((loaded) => {
+      if (loaded) {
+        setCustomImages(loaded);
+      }
+    }).catch(err => console.error('Error loading custom images', err));
+  }, []);
 
   const activeCase = BEFORE_AFTER_CASES[selectedCaseIndex];
+  
+  // Active image source (custom uploaded image takes precedence)
+  const currentDisplayImage = customImages[selectedCaseIndex] || activeCase.afterImage;
 
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSliderPosition(Number(e.target.value));
+  // Handle direct file upload from user's device with automatic canvas compression
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsCompressing(true);
+      try {
+        // Compress image to avoid QuotaExceededError (typically reduces size by 95%)
+        const compressedDataUrl = await compressImage(file, 1200, 0.82);
+        const updated = { ...customImages, [selectedCaseIndex]: compressedDataUrl };
+        setCustomImages(updated);
+        await saveCustomCaseImage(selectedCaseIndex, compressedDataUrl);
+      } catch (err) {
+        console.error('Error processing uploaded image:', err);
+      } finally {
+        setIsCompressing(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Preset gallery choices
+  const PRESET_GALLERY = [
+    { title: 'Cabelo Loiro Antes & Depois (0123)', url: '/images/blonde-hair-case.png?v=img0123_v1' },
+    { title: 'Cabelo Iluminado + Círculos Duplos', url: '/images/brunette-hair-case.png?v=img0123_v1' },
+    { title: 'Atendimento Profissional em Lavatório', url: '/images/hair-salon-professional.webp' },
+    { title: 'Kit Super Reconstrução Destaque', url: '/images/kit-super-reconstrucao-hero.jpg' }
+  ];
+
+  const handleSelectPreset = async (url: string) => {
+    const updated = { ...customImages, [selectedCaseIndex]: url };
+    setCustomImages(updated);
+    await saveCustomCaseImage(selectedCaseIndex, url);
+    setShowGallery(false);
+  };
+
+  const handleResetImage = async () => {
+    const updated = { ...customImages };
+    delete updated[selectedCaseIndex];
+    setCustomImages(updated);
+    await removeCustomCaseImage(selectedCaseIndex);
   };
 
   return (
     <section id="antes-depois" className="py-16 lg:py-24 bg-[#0f1015] border-t border-amber-500/20 relative">
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
+        <div className="text-center max-w-3xl mx-auto mb-10">
           <span className="text-xs uppercase font-bold tracking-widest text-amber-400">
             Eficácia Comprovada em Lavatório
           </span>
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2 font-serif-display">
-            Resultados Reais: Antes e Depois da Super Reconstrução
+            Resultados Reais: Análise de Casos Clínicos
           </h2>
           <p className="text-sm sm:text-base text-slate-300 mt-3 font-sans-body">
-            Arraste a barra para comparar o estado do fio fragilizado antes do tratamento e a restauração da fibra capilar após a aplicação do protocolo Dyusar.
+            Confira a análise fotográfica em diagnóstico microscópico da fibra capilar após o tratamento com o protocolo Dyusar.
           </p>
 
           {/* Case Filter Selector */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
             {BEFORE_AFTER_CASES.map((item, idx) => (
               <button
                 key={item.id}
-                onClick={() => setSelectedCaseIndex(idx)}
-                className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+                onClick={() => {
+                  setSelectedCaseIndex(idx);
+                  setShowGallery(false);
+                }}
+                className={`px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all cursor-pointer ${
                   selectedCaseIndex === idx
-                    ? 'bg-amber-400 text-black shadow-md shadow-amber-500/20'
-                    : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                    ? 'bg-amber-400 text-black shadow-lg shadow-amber-500/25 ring-2 ring-amber-300 scale-105'
+                    : 'bg-slate-800/90 text-slate-300 hover:bg-slate-700 hover:text-white'
                 }`}
               >
                 {item.title}
@@ -47,87 +117,40 @@ export const BeforeAfterSlider: React.FC = () => {
           </div>
         </div>
 
-        {/* Interactive Comparison Component */}
+        {/* Visual Showcase & Diagnostics Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
-          {/* Visual Slider Box (7 cols) */}
+          {/* Visual Showcase Box (7 cols) */}
           <div className="lg:col-span-7 flex flex-col items-center">
-            <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border-2 border-amber-500/40 shadow-2xl select-none bg-black">
-              
-              {/* After Layer (Full underneath with shiny healthy hair photo) */}
-              <div className="absolute inset-0 w-full h-full bg-black">
-                <img
-                  src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp?v=orig_v1' : '/images/hair-before-after-case2.webp?v=img12_v3'}
-                  alt="Cabelo recuperado e reconstruído com Dyusar"
-                  loading="lazy"
-                  className="w-full h-full object-contain filter brightness-105 contrast-105"
-                />
-                
-                {/* Subtle shine overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
-                  <span className="text-[11px] font-bold text-amber-300 bg-black/60 px-2 py-0.5 rounded border border-amber-400/30">
-                    ✓ Córtex Selado & Brilho Espelhado
-                  </span>
-                </div>
-
-                {/* Badge After */}
-                <div className="absolute top-4 right-4 bg-emerald-500/95 text-black text-xs font-black px-2.5 py-1 rounded-md shadow-md uppercase tracking-wider backdrop-blur-sm">
-                  DEPOIS (Dyusar)
-                </div>
-              </div>
-
-              {/* Before Layer (Clipped by sliderPosition with damaged, desaturated, frizzy look) */}
-              <div 
-                className="absolute inset-0 h-full overflow-hidden border-r-2 border-white transition-none bg-black"
-                style={{ width: `${sliderPosition}%` }}
-              >
-                <div className="absolute inset-0 w-full h-full min-w-full">
-                  <img
-                    src={selectedCaseIndex === 0 ? '/images/hair-before-after-case1.webp?v=orig_v1' : '/images/hair-before-after-case2.webp?v=img12_v3'}
-                    alt="Cabelo danificado antes do tratamento"
-                    loading="lazy"
-                    className="w-full h-full object-contain filter grayscale-[80%] contrast-[130%] brightness-[70%] sepia-[30%]"
-                  />
-                  {/* Damaged texture tint */}
-                  <div className="absolute inset-0 bg-red-950/25 mix-blend-multiply" />
-                  
-                  <div className="absolute bottom-4 left-4">
-                    <span className="text-[11px] font-bold text-red-300 bg-black/70 px-2 py-0.5 rounded border border-red-500/40">
-                      ✗ Cabelo Quebradiço & Sem Vida
-                    </span>
-                  </div>
-                </div>
-
-                {/* Badge Before */}
-                <div className="absolute top-4 left-4 bg-red-500/95 text-white text-xs font-black px-2.5 py-1 rounded-md shadow-md uppercase tracking-wider backdrop-blur-sm">
-                  ANTES
-                </div>
-              </div>
-
-              {/* Dividing Line & Draggable Handle */}
-              <div 
-                className="absolute top-0 bottom-0 w-0.5 bg-white pointer-events-none"
-                style={{ left: `${sliderPosition}%` }}
-              >
-                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-amber-400 text-black flex items-center justify-center shadow-2xl border-2 border-white">
-                  <ArrowLeftRight className="w-4 h-4" />
-                </div>
-              </div>
-
-              {/* Native range input overlay for seamless drag on all devices */}
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={sliderPosition}
-                onChange={handleSliderChange}
-                aria-label="Controle deslizante de antes e depois"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
+            
+            {/* Image Container */}
+            <div
+              className="relative w-full aspect-square sm:aspect-[4/3] max-w-[580px] rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-2xl bg-black group"
+            >
+              <img
+                key={`case-img-${selectedCaseIndex}-${currentDisplayImage}`}
+                src={currentDisplayImage}
+                alt={activeCase.title}
+                loading="lazy"
+                decoding="async"
+                width="600"
+                height="450"
+                className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
               />
+              
+              {/* Badge Overlay */}
+              <div className="absolute top-4 left-4 bg-amber-400 text-black text-xs font-black px-3 py-1 rounded-md shadow-lg uppercase tracking-wider backdrop-blur-sm">
+                Diagnóstico nº {selectedCaseIndex + 1}
+              </div>
+
+              <div className="absolute bottom-4 right-4 bg-black/85 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-400/40 shadow-md backdrop-blur-md">
+                ✓ Análise Microscópica 3D
+              </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-              <span>💡 Arraste para a esquerda ou direita para comparar</span>
+            <p className="text-xs text-slate-400 mt-2.5 flex items-center gap-1.5 font-mono">
+              <Check className="w-3.5 h-3.5 text-amber-400" />
+              <span>Resultados reais de salão homologados após o tratamento Dyusar</span>
             </p>
           </div>
 
