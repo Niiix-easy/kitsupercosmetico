@@ -75,7 +75,11 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
           <img
             src="/images/video-hero-poster.webp"
             alt="Vídeo de demonstração do Kit Dyusar no lavatório"
+            // @ts-ignore
+            fetchPriority="high"
             loading="eager"
+            width="640"
+            height="360"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-90 relative z-10"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 z-10" />

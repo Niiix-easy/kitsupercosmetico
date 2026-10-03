@@ -134,6 +134,8 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                 src="/images/logo-dyusar-horizontal.webp"
                 alt="Dyusar Cosméticos Profissionais"
                 loading="lazy"
+                width="160"
+                height="32"
                 className="h-8 w-auto object-contain filter brightness-110 mb-2 self-start"
               />
               <span className="text-[9px] uppercase tracking-[0.25em] text-[#d4af37]">

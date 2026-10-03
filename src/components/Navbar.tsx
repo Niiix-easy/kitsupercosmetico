@@ -62,6 +62,9 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
             alt="Dyusar Cosméticos Profissionais"
             // @ts-ignore
             fetchPriority="high"
+            loading="eager"
+            width="180"
+            height="36"
             className="h-7 sm:h-9 w-auto object-contain filter brightness-110 drop-shadow-md"
             onError={(e: any) => {
               const target = e.currentTarget;

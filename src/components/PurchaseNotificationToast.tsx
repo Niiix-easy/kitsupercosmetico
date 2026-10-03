@@ -54,11 +54,14 @@ export const PurchaseNotificationToast: React.FC = () => {
           <div className="w-11 h-11 rounded-full overflow-hidden border border-amber-400/50 shadow-md bg-slate-800">
             <img
               src={
-                currentIndex % 3 === 0 ? '/images/avatar-blonde.jpg' :
-                currentIndex % 3 === 1 ? '/images/avatar-brunette.jpg' :
-                '/images/avatar-salon.jpg'
+                currentIndex % 3 === 0 ? '/images/avatar-blonde.webp' :
+                currentIndex % 3 === 1 ? '/images/avatar-brunette.webp' :
+                '/images/avatar-salon.webp'
               }
               alt={currentNotification.name}
+              loading="lazy"
+              width="44"
+              height="44"
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';

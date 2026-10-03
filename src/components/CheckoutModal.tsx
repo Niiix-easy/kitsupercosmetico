@@ -396,6 +396,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <img 
                           src={`data:image/png;base64,${order.pixQrCodeBase64}`} 
                           alt="QR Code Pix"
+                          width="128"
+                          height="128"
                           className="w-full h-full object-contain"
                         />
                       ) : (

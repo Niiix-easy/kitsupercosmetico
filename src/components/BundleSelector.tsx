@@ -227,6 +227,8 @@ const BundleCard = memo(({
               src={currentImg}
               alt={bundle.title}
               loading="lazy"
+              width="320"
+              height="320"
               onLoad={() => onImageLoad(bundle.id)}
               onError={(e: any) => {
                 e.currentTarget.src = '/images/Kit Profissional 1 Litro.png';

@@ -237,6 +237,8 @@ export const ReviewsSection: React.FC = () => {
                         }
                         alt={rev.name}
                         loading="lazy"
+                        width="44"
+                        height="44"
                         className="w-full h-full object-cover"
                         onError={(e: any) => {
                           e.currentTarget.style.display = 'none';
@@ -288,6 +290,8 @@ export const ReviewsSection: React.FC = () => {
                           src={rev.id === 'rev-1' ? '/images/hair-before-after-case1.webp' : '/images/hair-before-after-case2.webp'}
                           alt="Resultado de cabelo"
                           loading="lazy"
+                          width="64"
+                          height="64"
                           className="w-full h-full object-cover"
                         />
                       </div>
