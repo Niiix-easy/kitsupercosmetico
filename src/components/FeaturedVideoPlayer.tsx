@@ -1,9 +1,5 @@
-import React, { useState, useRef } from 'react';
-import ReactPlayer from 'react-player';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Play, Pause, Volume2, VolumeX, RotateCcw, X, ArrowRight, Sparkles, CheckCircle2, Maximize } from 'lucide-react';
-
-const Player = ReactPlayer as any;
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw, X, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface FeaturedVideoPlayerProps {
   onBuyKit: () => void;
@@ -17,44 +13,80 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
 
-  const playerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Reliable, high-performance hair salon demonstration video
-  // Professional hair salon keratin reconstruction demonstration
   const VIDEO_URL = 'https://vjs.zencdn.net/v/oceans.mp4';
+
+  const safePlay = async () => {
+    if (videoRef.current) {
+      try {
+        await videoRef.current.play();
+        setIsPlaying(true);
+      } catch (err: any) {
+        // Prevent unhandled rejection errors when play() is interrupted by pause() or blocked by browser policy
+        if (err.name !== 'AbortError') {
+          console.warn('Playback interrupted:', err);
+        }
+      }
+    }
+  };
+
+  const safePause = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    setIsPlaying(false);
+  };
+
+  const togglePlayPause = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        safePlay();
+      } else {
+        safePause();
+      }
+    }
+  };
 
   const handleOpenAndPlay = () => {
     setIsVideoModalOpen(true);
     setHasEnded(false);
-    // Small delay to ensure the modal is rendered and the player is initializing
-    // before we trigger the 'playing' state change, preventing interrupted play() errors.
     setTimeout(() => {
-      setIsPlaying(true);
+      safePlay();
     }, 150);
   };
 
+  const handleCloseModal = () => {
+    safePause();
+    setIsVideoModalOpen(false);
+  };
+
   const handleRestart = () => {
-    if (playerRef.current) {
-      playerRef.current.seekTo(0);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
     }
     setPlayedSeconds(0);
     setHasEnded(false);
-    setIsPlaying(true);
+    safePlay();
   };
 
   const handleSeek = (fraction: number) => {
-    if (playerRef.current) {
-      playerRef.current.seekTo(fraction);
-    }
-    if (fraction < 0.99) {
-      setHasEnded(false);
-      setIsPlaying(true);
+    if (videoRef.current && duration > 0) {
+      const targetTime = fraction * duration;
+      videoRef.current.currentTime = targetTime;
+      setPlayedSeconds(targetTime);
+      if (fraction < 0.99) {
+        setHasEnded(false);
+        safePlay();
+      }
     }
   };
 
   const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
+    const validSecs = isNaN(secs) || secs < 0 ? 0 : secs;
+    const m = Math.floor(validSecs / 60);
+    const s = Math.floor(validSecs % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
@@ -150,32 +182,33 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
                 </h4>
               </div>
               <button
-                onClick={() => {
-                  setIsPlaying(false);
-                  setIsVideoModalOpen(false);
-                }}
+                onClick={handleCloseModal}
                 className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Video Viewport Stage powered by ReactPlayer */}
+            {/* Video Viewport Stage powered by Native HTML5 Video */}
             <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
-              <Player
-                ref={playerRef}
-                url={VIDEO_URL}
-                playing={isPlaying}
+              <video
+                ref={videoRef}
+                src={VIDEO_URL}
+                playsInline
                 muted={isMuted}
-                width="100%"
-                height="100%"
-                playsinline
-                onDuration={(d: number) => setDuration(d)}
-                onProgress={({ playedSeconds: ps }: { playedSeconds: number }) => setPlayedSeconds(ps)}
+                preload="metadata"
+                onLoadedMetadata={(e) => {
+                  if (e.currentTarget.duration) {
+                    setDuration(e.currentTarget.duration);
+                  }
+                }}
+                onTimeUpdate={(e) => setPlayedSeconds(e.currentTarget.currentTime)}
                 onEnded={() => {
                   setIsPlaying(false);
                   setHasEnded(true);
                 }}
+                onClick={togglePlayPause}
+                className="w-full h-full object-contain bg-black cursor-pointer"
               />
 
               {/* End of Video Completion Screen */}
@@ -205,7 +238,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
 
                     <button
                       onClick={() => {
-                        setIsVideoModalOpen(false);
+                        handleCloseModal();
                         onBuyKit();
                       }}
                       className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black text-xs font-extrabold uppercase tracking-wider hover:brightness-110 flex items-center gap-2 shadow-lg cursor-pointer"
@@ -217,10 +250,10 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
                 </div>
               )}
 
-              {/* Pause Click Trigger */}
+              {/* Pause Click Overlay */}
               {!isPlaying && !hasEnded && (
                 <button
-                  onClick={() => setIsPlaying(true)}
+                  onClick={togglePlayPause}
                   className="absolute z-20 w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-amber-300 text-black flex items-center justify-center shadow-2xl hover:scale-110 transition-transform cursor-pointer"
                 >
                   <Play className="w-8 h-8 fill-black translate-x-0.5" />
@@ -228,7 +261,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
               )}
 
               {/* Bottom Scrubber & Controls Bar */}
-              <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-gradient-to-t from-black via-black/85 to-transparent z-20 space-y-2">
+              <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 bg-gradient-to-t from-black via-black/85 to-transparent z-20 space-y-2 pointer-events-auto">
                 <div className="w-full flex items-center gap-2.5">
                   <span className="text-[10px] text-amber-300 font-mono font-bold">
                     {formatTime(playedSeconds)}
@@ -258,7 +291,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setIsPlaying(!isPlaying)}
+                      onClick={togglePlayPause}
                       className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-amber-400 hover:text-black text-white transition-colors cursor-pointer"
                     >
                       {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
@@ -274,7 +307,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
 
                   <button
                     onClick={() => {
-                      setIsVideoModalOpen(false);
+                      handleCloseModal();
                       onBuyKit();
                     }}
                     className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 text-black text-xs font-bold hover:brightness-110 flex items-center gap-1.5 shadow-md cursor-pointer"

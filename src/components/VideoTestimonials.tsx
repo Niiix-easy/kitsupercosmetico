@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
-import ReactPlayer from 'react-player';
-import { Star, ShieldCheck, Play, Pause, Volume2, VolumeX, Sparkles, Award, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Star, Sparkles, Play, Volume2, VolumeX, CheckCircle2, ArrowRight, AlertCircle } from 'lucide-react';
 
 interface VideoTestimonialsProps {
   onSelectKit: () => void;
 }
-
-const Player = ReactPlayer as any;
 
 interface TestimonialItem {
   id: string;
@@ -26,20 +23,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
   const [isMuted, setIsMuted] = useState(true);
   const [playerErrors, setPlayerErrors] = useState<Record<string, boolean>>({});
 
-  const handlePlayerSelect = (id: string | null) => {
-    if (id === activePlayerId) {
-      setActivePlayerId(null);
-      return;
-    }
-    
-    // Switch to new video
-    setActivePlayerId(id);
-  };
-
-  const handlePlayerError = (id: string) => {
-    console.error(`Error loading video testimonial: ${id}`);
-    setPlayerErrors(prev => ({ ...prev, [id]: true }));
-  };
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
   const testimonials: TestimonialItem[] = [
     {
@@ -80,6 +64,37 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
     }
   ];
 
+  const handleTogglePlay = async (id: string) => {
+    // Pause any other active video
+    Object.keys(videoRefs.current).forEach((key) => {
+      if (key !== id && videoRefs.current[key]) {
+        videoRefs.current[key]?.pause();
+      }
+    });
+
+    const targetVideo = videoRefs.current[id];
+    if (targetVideo) {
+      if (activePlayerId === id && !targetVideo.paused) {
+        targetVideo.pause();
+        setActivePlayerId(null);
+      } else {
+        try {
+          await targetVideo.play();
+          setActivePlayerId(id);
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            console.warn('Playback interrupted:', err);
+          }
+        }
+      }
+    }
+  };
+
+  const handlePlayerError = (id: string) => {
+    console.error(`Error loading video testimonial: ${id}`);
+    setPlayerErrors(prev => ({ ...prev, [id]: true }));
+  };
+
   return (
     <section className="py-16 lg:py-24 bg-[#0e0f14] border-t border-slate-800/80 relative overflow-hidden">
       {/* Background Accent Glow */}
@@ -115,26 +130,22 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
                 className="bg-[#14151c] border border-slate-800 hover:border-amber-500/40 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between transition-all duration-300 group"
               >
                 <div>
-                  {/* Video Viewport Container powered by ReactPlayer */}
+                  {/* Video Viewport Container powered by Native Video */}
                   <div className="relative aspect-video w-full bg-black overflow-hidden">
                     {!hasError ? (
-                      <Player
-                        url={item.videoUrl}
-                        playing={isThisPlaying}
-                        muted={isMuted}
-                        loop
-                        width="100%"
-                        height="100%"
-                        playsinline
-                        onError={() => handlePlayerError(item.id)}
-                        className="absolute top-0 left-0"
-                        config={{
-                          file: {
-                            attributes: {
-                              poster: item.poster
-                            }
-                          }
+                      <video
+                        ref={(el) => {
+                          videoRefs.current[item.id] = el;
                         }}
+                        src={item.videoUrl}
+                        poster={item.poster}
+                        playsInline
+                        loop
+                        muted={isMuted}
+                        preload="metadata"
+                        onError={() => handlePlayerError(item.id)}
+                        onClick={() => handleTogglePlay(item.id)}
+                        className="w-full h-full object-cover cursor-pointer"
                       />
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/50 p-4 text-center">
@@ -146,7 +157,7 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
                     {/* Dark gradient overlay when paused */}
                     {!isThisPlaying && !hasError && (
                       <div 
-                        onClick={() => handlePlayerSelect(item.id)}
+                        onClick={() => handleTogglePlay(item.id)}
                         className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center cursor-pointer group-hover:bg-black/40 transition-colors z-20"
                       >
                         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 to-amber-300 text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
@@ -200,46 +211,45 @@ export const VideoTestimonials: React.FC<VideoTestimonialsProps> = ({ onSelectKi
                   </div>
                 </div>
 
-                {/* Author Info & Footer */}
-                <div className="p-5 pt-0 text-left border-t border-slate-800/80 mt-3 pt-3 flex items-center justify-between">
+                {/* Card Footer Profile Info */}
+                <div className="px-5 pb-5 pt-3 border-t border-slate-800/80 flex items-center justify-between">
                   <div>
                     <h4 className="text-xs font-bold text-white font-serif-display">
                       {item.name}
                     </h4>
-                    <p className="text-[10px] text-amber-300 font-medium">
+                    <p className="text-[11px] text-amber-400 font-medium">
                       {item.role}
                     </p>
                     <p className="text-[10px] text-slate-400">
                       {item.salon} • {item.city}
                     </p>
                   </div>
-
-                  <Award className="w-6 h-6 text-amber-400/50 shrink-0" />
                 </div>
+
               </div>
             );
           })}
         </div>
 
-        {/* Bottom Call to Action */}
-        <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-[#171922] via-[#1b1c26] to-[#171922] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-left max-w-4xl mx-auto shadow-2xl">
-          <div className="flex-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
-              Tenha o Mesmo Padrão de Salão na Sua Rotina
+        {/* CTA Banner Below Testimonials */}
+        <div className="mt-12 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#181922] via-[#1a1b24] to-[#121319] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl">
+          <div className="text-left">
+            <span className="text-[10px] uppercase font-bold text-amber-400 tracking-widest block">
+              Garantia de Satisfação Profissional
             </span>
-            <h4 className="text-base sm:text-lg font-bold text-white font-serif-display mt-0.5">
-              Experimente o Kit Super Reconstrução com 7 Dias de Garantia
-            </h4>
-            <p className="text-xs text-slate-300 mt-0.5">
-              Receba os mesmos ativos e a mesma tecnologia utilizada pelos cabeleireiros profissionais.
+            <h3 className="text-lg sm:text-xl font-extrabold text-white font-serif-display mt-0.5">
+              Experimente a Reconstrução Escolhida por Milhares de Salões
+            </h3>
+            <p className="text-xs text-slate-300 mt-1 max-w-xl">
+              Entrega rápida para todo o Brasil, suporte especializado e garantia blindada de 7 dias ou seu dinheiro de volta.
             </p>
           </div>
 
           <button
             onClick={onSelectKit}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-2 shrink-0 shadow-lg cursor-pointer"
+            className="shrink-0 px-6 py-3 rounded-xl bg-gradient-to-r from-[#ffe58f] via-[#d4af37] to-[#ba8c1a] text-black text-xs font-bold uppercase tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
           >
-            <span>Escolher Meu Kit</span>
+            <span>Escolher Meu Kit com Desconto</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
