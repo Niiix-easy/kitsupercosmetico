@@ -16,7 +16,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Reliable, high-performance hair salon demonstration video
-  const VIDEO_URL = 'https://vjs.zencdn.net/v/oceans.mp4';
+  const VIDEO_URL = '/video_1.mp4';
 
   const safePlay = async () => {
     if (videoRef.current) {

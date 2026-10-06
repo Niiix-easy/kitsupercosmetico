@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
 export const DEFAULT_KIT_IMAGES: Record<string, string> = {
-  'kit-home-care': '/images/Kit Home Care Reconstruçao.png?v=luxury2',
-  'kit-profissional-1litro': '/images/Kit Profissional 1 Litro.png?v=luxury2',
-  'kit-profissional-completo': '/images/Kit Profissional Completo.png?v=luxury2'
+  'kit-home-care': '/images/kit-home-care-300ml.webp?v=luxury5',
+  'kit-profissional-1litro': '/images/kit-profissional-1litro.webp?v=luxury5',
+  'kit-profissional-completo': '/images/kit-profissional-completo.webp?v=luxury5'
 };
 
 const URL_STORAGE_KEY = 'dyusar_kit_image_urls_v1';

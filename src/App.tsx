@@ -27,6 +27,7 @@ import { NewsletterModal } from './components/NewsletterModal';
 import { RecurringNewsletterToast } from './components/RecurringNewsletterToast';
 import { AnimatedSection } from './components/AnimatedSection';
 import { VideoTestimonials } from './components/VideoTestimonials';
+import { ProductVideoShowcase } from './components/ProductVideoShowcase';
 import { PushNotificationManager } from './components/PushNotificationManager';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { AdminDashboard } from './components/AdminDashboard';
@@ -75,9 +76,9 @@ export default function App() {
 
     // 2. Preload critical images to eliminate layout shift and show seamless luxury experience
     const criticalImages = [
-      '/images/Kit Profissional Completo.webp?v=luxury2',
-      '/images/Kit Profissional 1 Litro.webp?v=luxury2',
-      '/images/Kit Home Care Reconstruçao.webp?v=luxury2',
+      '/images/kit-profissional-completo.webp?v=luxury5',
+      '/images/kit-profissional-1litro.webp?v=luxury5',
+      '/images/kit-home-care-300ml.webp?v=luxury5',
       '/images/hair-salon-professional.webp'
     ];
 
@@ -340,9 +341,14 @@ export default function App() {
           <ReviewsSection />
         </AnimatedSection>
 
-        {/* Video Testimonials Section using React-Player */}
+        {/* Video Testimonials Section (Professional Reviews with Images) */}
         <AnimatedSection>
           <VideoTestimonials onSelectKit={() => handleSelectBundleById('kit-profissional-1litro')} />
+        </AnimatedSection>
+
+        {/* Product in Action Videos Section (Influencer Reviews) */}
+        <AnimatedSection>
+          <ProductVideoShowcase />
         </AnimatedSection>
 
         {/* Frequently Asked Questions */}

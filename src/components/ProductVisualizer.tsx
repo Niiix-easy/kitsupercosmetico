@@ -25,7 +25,7 @@ export const ProductVisualizer: React.FC<ProductVisualizerProps> = ({
 
   const productPhotos = {
     kit: {
-      image: '/images/Kit Profissional Completo.webp?v=luxury4',
+      image: '/images/kit-profissional-completo.webp?v=luxury5',
       alt: 'Kit Profissional Completo Dyusar Super Reconstruction',
       title: 'Kit Profissional Completo (1 Litro + Queratina)',
       badge: 'Protocolo Master 4 Passos de Alto Impacto',

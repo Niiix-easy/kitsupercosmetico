@@ -73,15 +73,6 @@ export const BeforeAfterSlider: React.FC = () => {
 
   return (
     <section id="antes-depois" className="py-16 lg:py-24 bg-[#0f1015] border-t border-amber-500/20 relative">
-      {/* Hidden File Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-      />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
@@ -125,7 +116,7 @@ export const BeforeAfterSlider: React.FC = () => {
             
             {/* Image Container */}
             <div
-              className="relative w-full aspect-square sm:aspect-[4/3] max-w-[580px] rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-2xl bg-black group"
+              className="relative w-full aspect-square sm:aspect-[4/3] max-w-[580px] rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-2xl bg-black"
             >
               <img
                 key={`case-img-${selectedCaseIndex}-${currentDisplayImage}`}
@@ -135,7 +126,7 @@ export const BeforeAfterSlider: React.FC = () => {
                 decoding="async"
                 width="600"
                 height="450"
-                className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-300"
+                className="w-full h-full object-cover object-center transition-transform duration-300"
               />
               
               {/* Badge Overlay */}
@@ -153,6 +144,7 @@ export const BeforeAfterSlider: React.FC = () => {
               <span>Resultados reais de salão homologados após o tratamento Dyusar</span>
             </p>
           </div>
+
 
           {/* Diagnostic & Clinical Data Card (5 cols) */}
           <div className="lg:col-span-5 flex flex-col justify-center bg-[#151720] border border-amber-500/30 rounded-2xl p-6 sm:p-7 shadow-xl">

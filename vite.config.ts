@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { defineConfig } from 'vite';
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 Megabytes
+const MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024; // 50 Megabytes
 const MIN_SQUARE_RATIO = 0.85;
 const MAX_SQUARE_RATIO = 1.18;
 
@@ -13,6 +14,7 @@ function kitUploadPlugin() {
   return {
     name: 'kit-upload-endpoint',
     configureServer(server: any) {
+      // Image Upload Endpoint
       server.middlewares.use('/api/upload-kit-image', (req: any, res: any) => {
         if (req.method === 'POST') {
           let body = '';
@@ -133,6 +135,60 @@ function kitUploadPlugin() {
               res.writeHead(500, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ error: `Erro no servidor: ${err.message}` }));
               return;
+            }
+          });
+        } else {
+          res.writeHead(405);
+          res.end();
+        }
+      });
+
+      // Video Upload Endpoint
+      server.middlewares.use('/api/upload-video', (req: any, res: any) => {
+        if (req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk: any) => { body += chunk; });
+          req.on('end', () => {
+            try {
+              const { videoId, dataUrl } = JSON.parse(body);
+
+              if (!videoId || !dataUrl || !dataUrl.startsWith('data:video/')) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                  error: 'Formato de vídeo inválido. Certifique-se de enviar um arquivo MP4.' 
+                }));
+                return;
+              }
+
+              const base64Data = dataUrl.replace(/^data:video\/mp4;base64,/, '');
+              const buffer = Buffer.from(base64Data, 'base64');
+
+              if (buffer.length > MAX_VIDEO_SIZE_BYTES) {
+                const sizeMB = (buffer.length / (1024 * 1024)).toFixed(1);
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ 
+                  error: `O vídeo excede o tamanho máximo permitido de 50MB (${sizeMB}MB enviado).` 
+                }));
+                return;
+              }
+
+              const filename = `${videoId}.mp4`;
+              const p = path.join(__dirname, 'public', filename);
+              fs.writeFileSync(p, buffer);
+
+              const distP = path.join(__dirname, 'dist', filename);
+              if (fs.existsSync(path.dirname(distP))) fs.writeFileSync(distP, buffer);
+
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ 
+                success: true, 
+                url: `/${filename}?t=${Date.now()}`,
+                message: 'Vídeo atualizado com sucesso!'
+              }));
+
+            } catch (err: any) {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: `Erro no servidor: ${err.message}` }));
             }
           });
         } else {

@@ -20,7 +20,7 @@ export const PRODUCT_BUNDLES: ProductBundle[] = [
       'Condicionador Super Reconstruction 300ml',
       'Máscara Super Reconstruction 300g'
     ],
-    image: '/images/Kit Home Care Reconstruçao.webp?v=luxury4'
+    image: '/images/kit-home-care-300ml.webp?v=luxury5'
   },
   {
     id: 'kit-profissional-1litro',
@@ -45,7 +45,7 @@ export const PRODUCT_BUNDLES: ProductBundle[] = [
       'Condicionador Super Reconstruction 1 Litro',
       'Máscara Super Reconstruction 1kg'
     ],
-    image: '/images/Kit Profissional 1 Litro.webp?v=luxury4'
+    image: '/images/kit-profissional-1litro.webp?v=luxury5'
   },
   {
     id: 'kit-profissional-completo',
@@ -72,7 +72,7 @@ export const PRODUCT_BUNDLES: ProductBundle[] = [
       'Máscara Super Reconstruction 1kg',
       'Queratina Líquida 500ml'
     ],
-    image: '/images/Kit Profissional Completo.webp?v=luxury4'
+    image: '/images/kit-profissional-completo.webp?v=luxury5'
   }
 ];
 
@@ -255,8 +255,8 @@ export const BEFORE_AFTER_CASES = [
     sessionCount: '2 semanas de cronograma capilar',
     diagnostic: 'Cabelo opaco, pontas espigadas com nós de fada e alta perda de umidade natural para o ar.',
     result: 'Brilho espelhado 3D duradouro, emoliência sedosa e blindagem térmica contra calor de até 230°C.',
-    beforeImage: '/images/avatar-brunette.jpg',
-    afterImage: '/images/brunette-hair-case.png?v=img0123_v1'
+    beforeImage: '/images/hair-before-after-case1.webp',
+    afterImage: '/images/hair-before-after-case1.webp'
   },
   {
     id: 'case-2',
@@ -266,8 +266,8 @@ export const BEFORE_AFTER_CASES = [
     sessionCount: '1 única aplicação completa no lavatório',
     diagnostic: 'Fio emborrachado com perda de elasticidade, rompendo-se com leve tração dos dedos e cutículas completamente abertas.',
     result: 'Interrupção instantânea do efeito chiclete, reposição da massa cortical interna e selagem com alinhamento das escamas capilares.',
-    beforeImage: '/images/avatar-blonde.jpg',
-    afterImage: '/images/blonde-hair-case.png?v=img0123_v1'
+    beforeImage: '/images/hair-before-after-case2.webp',
+    afterImage: '/images/hair-before-after-case2.webp'
   }
 ];
 
