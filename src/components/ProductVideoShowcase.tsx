@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Sparkles, CheckCircle2, ArrowRight, Maximize } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Sparkles, CheckCircle2, ArrowRight, Maximize, Upload, Loader2, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { trackEvent } from '../utils/pixelTracking';
 
 interface VideoItem {
   id: string;
@@ -9,6 +10,7 @@ interface VideoItem {
   subtitle: string;
   description: string;
   tag: string;
+  captions?: string;
 }
 
 const formatTime = (secs: number) => {
@@ -25,20 +27,30 @@ const VideoCard: React.FC<{
   onGlobalPlay: (id: string) => void; 
   isActive: boolean;
   index: number;
+  onRefresh: () => void;
 }> = ({ 
   video, 
   isGlobalMuted, 
   onMuteToggle,
   onGlobalPlay,
   isActive,
-  index
+  index,
+  onRefresh
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [playedSeconds, setPlayedSeconds] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState(0);
+  
+  // Tracking states
+  const [hasStarted, setHasStarted] = useState(false);
+  const [hasReached50, setHasReached50] = useState(false);
+  const [hasFinished, setHasFinished] = useState(false);
 
   useEffect(() => {
     if (!isActive && isPlaying) {
@@ -46,6 +58,25 @@ const VideoCard: React.FC<{
       setIsPlaying(false);
     }
   }, [isActive]);
+
+  useEffect(() => {
+    if (isPlaying && !hasStarted) {
+      trackEvent.trackVideo('video_start', video.title);
+      setHasStarted(true);
+    }
+    
+    if (isPlaying && duration > 0) {
+      const progress = (playedSeconds / duration) * 100;
+      if (progress >= 50 && !hasReached50) {
+        trackEvent.trackVideo('video_completed_50%', video.title);
+        setHasReached50(true);
+      }
+      if (progress >= 95 && !hasFinished) {
+        trackEvent.trackVideo('video_finished', video.title);
+        setHasFinished(true);
+      }
+    }
+  }, [isPlaying, playedSeconds, duration]);
 
   const handleTogglePlay = async () => {
     if (videoRef.current) {
@@ -86,6 +117,64 @@ const VideoCard: React.FC<{
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) {
+        alert("O vídeo excede o limite de 100MB.");
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadPercent(0);
+
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks (extremely safe for Nginx limits)
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+      const slotId = `video_${index + 1}`;
+
+      try {
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const start = chunkIndex * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
+
+          // Convert chunk to base64
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target?.result as string);
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(chunk);
+          });
+
+          const response = await fetch('/api/upload-video-chunk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId: slotId, chunkIndex, totalChunks, dataUrl })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+            throw new Error(errorData.error || 'Erro no envio do pedaço.');
+          }
+
+          const data = await response.json();
+          const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+          setUploadPercent(percent);
+
+          if (data.completed) {
+            onRefresh();
+            setError(false);
+          }
+        }
+      } catch (err: any) {
+        console.error("Upload error:", err);
+        alert(`Falha no upload: ${err.message || 'Conexão recusada.'}`);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
   const progressPercent = duration > 0 ? (playedSeconds / duration) * 100 : 0;
 
   return (
@@ -95,30 +184,93 @@ const VideoCard: React.FC<{
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
       ref={containerRef}
-      className="group bg-[#14151c] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-amber-500/40 flex flex-col h-full"
+      className="group bg-[#14151c] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-amber-500/40 flex flex-col h-full relative"
     >
+      {/* Hidden File Input */}
+      <input 
+        type="file" 
+        accept="video/*" 
+        className="hidden" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+      />
+
+      {/* Admin Upload UI */}
+      <div className="absolute top-4 right-4 z-40 flex gap-2">
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black transition-all backdrop-blur-md shadow-lg disabled:opacity-50 text-[10px] font-bold uppercase tracking-wider group/btn"
+          title="Fazer upload de vídeo do seu PC (MP4)"
+        >
+          {isUploading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Upload className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+          )}
+          <span>{isUploading ? 'Enviando...' : 'Trocar Vídeo'}</span>
+        </button>
+      </div>
+
       {/* Video Container */}
-      <div className="relative aspect-[9/16] w-full bg-black overflow-hidden cursor-pointer">
-        <video
-          ref={videoRef}
-          src={video.url}
-          playsInline
-          loop
-          muted={isGlobalMuted}
-          preload="none"
-          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-          onTimeUpdate={(e) => setPlayedSeconds(e.currentTarget.currentTime)}
-          onError={() => setError(true)}
-          onClick={handleTogglePlay}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        />
+      <div className="relative aspect-[9/16] w-full bg-[#0a0a0c] overflow-hidden cursor-pointer group-hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+        {!isUploading && (
+          <video
+            key={video.url}
+            ref={videoRef}
+            src={video.url}
+            playsInline
+            autoPlay
+            muted={isGlobalMuted}
+            loop
+            preload="metadata"
+            onLoadedMetadata={(e) => {
+              setDuration(e.currentTarget.duration);
+              setError(false);
+            }}
+            onTimeUpdate={(e) => setPlayedSeconds(e.currentTarget.currentTime)}
+            onError={() => {
+              // Only set error if we actually have a URL but it fails
+              if (video.url.split('?')[0] !== '/') {
+                setError(true);
+              }
+            }}
+            onClick={handleTogglePlay}
+            className={`w-full h-full object-cover transition-all duration-700 ${isPlaying ? 'scale-100' : 'scale-105 blur-[2px] opacity-60'}`}
+          >
+            {video.captions && (
+              <track kind="captions" src={video.captions} srcLang="pt-BR" label="Português" default />
+            )}
+          </video>
+        )}
         
-        {/* Error Fallback */}
-        {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 p-4 text-center">
-            <Sparkles className="w-8 h-8 text-amber-500 mb-2" />
-            <span className="text-white text-xs font-bold uppercase mb-1">Vídeo indisponível</span>
-            <span className="text-slate-500 text-[10px]">Verifique a conexão ou tente mais tarde.</span>
+        {/* Error or Missing Video Fallback */}
+        {(error || isUploading) && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0c0d10] p-6 text-center border-2 border-dashed border-slate-800 m-2 rounded-xl">
+            {isUploading ? (
+              <>
+                <Loader2 className="w-10 h-10 text-amber-500 animate-spin mb-4" />
+                <p className="text-white font-bold">Processando vídeo... ({uploadPercent}%)</p>
+                <p className="text-slate-500 text-xs mt-2">Isso pode levar alguns segundos dependendo do tamanho.</p>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-700">
+                  <Camera className="w-8 h-8 text-slate-500" />
+                </div>
+                <h4 className="text-white font-bold mb-2">Vídeo não encontrado</h4>
+                <p className="text-slate-400 text-xs mb-6 px-4">
+                  Esta seção aguarda um vídeo real do produto para converter seus clientes.
+                </p>
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-6 py-3 bg-amber-500 text-black font-black text-[11px] uppercase tracking-widest rounded-lg hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-lg shadow-amber-500/20"
+                >
+                  <Upload className="w-4 h-4" />
+                  Selecionar do meu PC
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -126,7 +278,7 @@ const VideoCard: React.FC<{
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
 
         {/* Play Button Overlay (Centered) */}
-        {!isPlaying && !error && (
+        {!isPlaying && !error && !isUploading && (
           <div 
             onClick={handleTogglePlay}
             className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] group-hover:bg-black/10 transition-colors z-20"
@@ -180,6 +332,7 @@ const VideoCard: React.FC<{
                   handleTogglePlay();
                 }}
                 className="p-2 rounded-lg bg-white/10 hover:bg-amber-400 hover:text-black text-white transition-all cursor-pointer"
+                title={isPlaying ? "Pausar" : "Reproduzir"}
               >
                 {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
               </button>
@@ -190,6 +343,7 @@ const VideoCard: React.FC<{
                   onMuteToggle();
                 }}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                title={isGlobalMuted ? "Ativar som" : "Silenciar"}
               >
                 {isGlobalMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
@@ -201,6 +355,7 @@ const VideoCard: React.FC<{
                 handleFullscreen();
               }}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+              title="Tela cheia"
             >
               <Maximize className="w-4 h-4" />
             </button>
@@ -229,12 +384,25 @@ const VideoCard: React.FC<{
 export const ProductVideoShowcase: React.FC = () => {
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [videoUrls, setVideoUrls] = useState<Record<string, string>>({
+    video_1: '/video_1.mp4',
+    video_2: '/video_2.mp4',
+    video_3: '/video_3.mp4'
+  });
+
+  useEffect(() => {
+    fetch('/api/video-urls')
+      .then(res => res.json())
+      .then(data => setVideoUrls(data))
+      .catch(err => console.error('Failed to load dynamic video CDN URLs:', err));
+  }, [refreshKey]);
   
-  // Using absolute paths as provided by user upload
+  // Using absolute paths with timestamp for cache busting
   const videos: VideoItem[] = [
     {
       id: 'v1',
-      url: '/video_1.mp4',
+      url: videoUrls.video_1.includes('?') ? `${videoUrls.video_1}&t=${refreshKey}` : `${videoUrls.video_1}?t=${refreshKey}`,
       title: 'Apresentação Dyusar',
       subtitle: 'Tratamento de Salão em Casa',
       description: 'Conheça o kit Super Reconstrução que está revolucionando o cuidado capilar com resultados profissionais.',
@@ -242,7 +410,7 @@ export const ProductVideoShowcase: React.FC = () => {
     },
     {
       id: 'v2',
-      url: '/video_2.mp4',
+      url: videoUrls.video_2.includes('?') ? `${videoUrls.video_2}&t=${refreshKey}` : `${videoUrls.video_2}?t=${refreshKey}`,
       title: 'Passo a Passo Real',
       subtitle: 'Aplicação e Textura',
       description: 'Veja como aplicar corretamente para obter a máxima performance de reconstrução e brilho.',
@@ -250,7 +418,7 @@ export const ProductVideoShowcase: React.FC = () => {
     },
     {
       id: 'v3',
-      url: '/video_3.mp4',
+      url: videoUrls.video_3.includes('?') ? `${videoUrls.video_3}&t=${refreshKey}` : `${videoUrls.video_3}?t=${refreshKey}`,
       title: 'Efeito Teia & Brilho',
       subtitle: 'Resultado de Transformação',
       description: 'Sinta a potência da máscara concentrada e o resultado de um fio 100% recuperado e selado.',
@@ -294,6 +462,7 @@ export const ProductVideoShowcase: React.FC = () => {
                 onMuteToggle={() => setIsMuted(!isMuted)}
                 onGlobalPlay={(id) => setActiveVideoId(id)}
                 isActive={activeVideoId === video.id}
+                onRefresh={() => setRefreshKey(Date.now())}
               />
             ))}
           </AnimatePresence>
@@ -321,5 +490,6 @@ export const ProductVideoShowcase: React.FC = () => {
     </section>
   );
 };
+
 
 

@@ -4,6 +4,11 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
+import * as Sentry from "@sentry/react";
+import { initSentry } from './utils/sentry';
+
+initSentry();
+
 import { Navbar } from './components/Navbar';
 import { StockUrgencyBanner } from './components/StockUrgencyBanner';
 import { Hero } from './components/Hero';

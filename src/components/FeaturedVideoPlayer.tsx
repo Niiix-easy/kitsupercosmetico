@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, RotateCcw, X, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw, X, ArrowRight, Sparkles, CheckCircle2, Upload, Loader2 } from 'lucide-react';
 
 interface FeaturedVideoPlayerProps {
   onBuyKit: () => void;
@@ -12,11 +12,82 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
   const [duration, setDuration] = useState(74); // default ~1m14s
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(Date.now());
+  const [videoUrl, setVideoUrl] = useState('/video_1.mp4');
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    fetch('/api/video-urls')
+      .then(res => res.json())
+      .then(data => {
+        if (data.video_1) setVideoUrl(data.video_1);
+      })
+      .catch(err => console.error('Failed to load dynamic hero video CDN URL:', err));
+  }, [refreshKey]);
 
   // Reliable, high-performance hair salon demonstration video
-  const VIDEO_URL = '/video_1.mp4';
+  const VIDEO_URL = videoUrl.includes('?') ? `${videoUrl}&t=${refreshKey}` : `${videoUrl}?t=${refreshKey}`;
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) {
+        alert("O vídeo excede o limite de 100MB.");
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadPercent(0);
+
+      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks (extremely safe for Nginx limits)
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+      const slotId = 'video_1';
+
+      try {
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const start = chunkIndex * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
+
+          // Convert chunk to base64
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target?.result as string);
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(chunk);
+          });
+
+          const response = await fetch('/api/upload-video-chunk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ videoId: slotId, chunkIndex, totalChunks, dataUrl })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+            throw new Error(errorData.error || 'Erro no envio do pedaço.');
+          }
+
+          const data = await response.json();
+          const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+          setUploadPercent(percent);
+
+          if (data.completed) {
+            setRefreshKey(Date.now());
+          }
+        }
+      } catch (err: any) {
+        console.error("Upload error:", err);
+        alert(`Falha no upload: ${err.message || 'Conexão recusada.'}`);
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
 
   const safePlay = async () => {
     if (videoRef.current) {
@@ -93,7 +164,27 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
   const progressPercent = duration > 0 ? (playedSeconds / duration) * 100 : 0;
 
   return (
-    <div className="w-full mt-6">
+    <div className="w-full mt-6 relative">
+      <input 
+        type="file" 
+        accept="video/*" 
+        className="hidden" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+      />
+
+      {/* Admin Upload Button for Hero Video */}
+      <div className="absolute -top-12 right-0 z-40">
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#181920]/80 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black transition-all backdrop-blur-md shadow-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+        >
+          {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+          <span>{isUploading ? `Subindo (${uploadPercent}%)` : 'Mudar Vídeo Principal'}</span>
+        </button>
+      </div>
+
       {/* Featured Video Teaser Card */}
       <div 
         onClick={handleOpenAndPlay}

@@ -163,4 +163,26 @@ export const trackEvent = {
       });
     }
   },
+
+  // Video Engagement
+  trackVideo: (eventName: string, videoTitle: string) => {
+    // Google Analytics (Custom Event)
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, {
+        video_title: videoTitle,
+      });
+    }
+    // TikTok (Custom Event)
+    if (window.ttq && typeof window.ttq.track === 'function') {
+      window.ttq.track(eventName, {
+        video_title: videoTitle,
+      });
+    }
+    // Send to our Firestore logs
+    fetch('/api/video-engage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventName, videoTitle })
+    }).catch(err => console.error('Failed to log engagement:', err));
+  },
 };

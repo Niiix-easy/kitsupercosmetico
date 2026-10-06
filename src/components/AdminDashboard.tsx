@@ -11,6 +11,7 @@ import axios from 'axios';
 import { auth, db } from '../lib/firebase';
 import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { AdminVideoManager } from './AdminVideoManager';
 
 const COLORS = ['#d4af37', '#ba8c1a', '#ffe58f', '#91711e', '#f4f4f5'];
 
@@ -189,6 +190,104 @@ export const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) =
           </div>
         </div>
 
+        {/* Video Engagement Analytics */}
+        <div className="p-6 rounded-2xl bg-[#14151b] border border-slate-800 shadow-2xl mb-8">
+          <div className="flex items-center gap-2 mb-6">
+            <TrendingUp className="w-5 h-5 text-amber-400" />
+            <h3 className="font-bold text-lg">Engajamento de Vídeos de Prova Social</h3>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Chart (2 cols) */}
+            <div className="lg:col-span-2 h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.videoMetrics}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+                  <XAxis dataKey="name" stroke="#718096" fontSize={10} tick={{fill: '#718096'}} />
+                  <YAxis stroke="#718096" fontSize={10} tick={{fill: '#718096'}} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1a1c25', border: '1px solid #2d3748', borderRadius: '8px' }}
+                    itemStyle={{ color: '#d4af37' }}
+                  />
+                  <Legend />
+                  <Bar dataKey="visualizacoes" name="Visualizações (Inícios)" fill="#718096" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="retencao50" name="Retenção 50% (%)" fill="#3182ce" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="conclusao" name="Taxa Conclusão (%)" fill="#d4af37" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Stats Table (1 col) */}
+            <div className="bg-[#1a1c25] p-5 rounded-xl border border-slate-800 flex flex-col justify-between">
+              <div>
+                <h4 className="font-bold text-sm text-slate-300 mb-4 uppercase tracking-wider">Performance de Funil de Vídeo</h4>
+                <div className="space-y-4">
+                  {stats.videoMetrics?.map((vid: any) => (
+                    <div key={vid.name} className="pb-3 border-b border-slate-800 last:border-b-0">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-bold text-white line-clamp-1">{vid.name}</span>
+                        <span className="text-xs font-mono text-amber-400 font-bold">{vid.conclusao}% Concl.</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                        <span>Views: {vid.visualizacoes}</span>
+                        <span>Retenção 50%: {vid.retencao50}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-4 leading-relaxed">
+                * As taxas são calculadas em tempo real com base no disparo de pixels e interações dos usuários de ponta a ponta.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Heatmap de Visualização (Audience Retention) */}
+        <div className="p-6 rounded-2xl bg-[#14151b] border border-slate-800 shadow-2xl mb-8">
+          <div className="flex items-center gap-2 mb-6">
+            <TrendingUp className="w-5 h-5 text-indigo-400" stroke="#81e6d9" />
+            <h3 className="font-bold text-lg">Heatmap & Retenção de Audiência (Safari/Chrome)</h3>
+          </div>
+          <p className="text-xs text-slate-400 mb-6">
+            Gráfico de calor que ilustra a retenção de público de ponta a ponta. Identifique os pontos exatos onde os usuários pausam ou abandonam a reprodução.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {stats.videoMetrics?.map((vid: any) => {
+              const retentionData = [
+                { ponto: '0%', retencao: 100 },
+                { ponto: '50%', retencao: vid.retencao50 },
+                { ponto: '100%', retencao: vid.conclusao }
+              ];
+              
+              return (
+                <div key={vid.name} className="bg-[#1a1c25] p-5 rounded-xl border border-slate-800 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-sm text-white mb-4 truncate">{vid.name}</h4>
+                    <div className="h-44 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={retentionData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+                          <XAxis dataKey="ponto" stroke="#718096" fontSize={9} tick={{fill: '#718096'}} />
+                          <YAxis stroke="#718096" fontSize={9} domain={[0, 100]} tick={{fill: '#718096'}} unit="%" />
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#14151b', border: '1px solid #2d3748', borderRadius: '8px' }}
+                            itemStyle={{ color: '#81e6d9' }}
+                          />
+                          <Line type="monotone" dataKey="retencao" name="Retenção" stroke="#81e6d9" strokeWidth={3} dot={{ stroke: '#81e6d9', strokeWidth: 2, r: 4 }} activeDot={{ r: 6 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-800/60 flex justify-between text-[10px] font-mono text-slate-400">
+                    <span>Abandono: {100 - vid.conclusao}%</span>
+                    <span className="text-emerald-400 font-bold">Desempenho: {vid.conclusao > 50 ? 'Excelente' : 'Ajustar'}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Recent Orders Table */}
         <div className="p-6 rounded-2xl bg-[#14151b] border border-slate-800 shadow-2xl overflow-x-auto">
           <div className="flex items-center justify-between mb-6">
@@ -226,6 +325,9 @@ export const AdminDashboard: React.FC<{ onClose: () => void }> = ({ onClose }) =
             </tbody>
           </table>
         </div>
+
+        {/* Custom Video Showcase Manager component */}
+        <AdminVideoManager />
       </main>
     </div>
   );

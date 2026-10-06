@@ -41,6 +41,27 @@
         "email": { "type": "string" }
       },
       "required": ["uid", "email"]
+    },
+    "VideoSettings": {
+      "title": "Video Settings",
+      "description": "Dynamic video CDN and local URLs",
+      "type": "object",
+      "properties": {
+        "video_1": { "type": "string" },
+        "video_2": { "type": "string" },
+        "video_3": { "type": "string" }
+      }
+    },
+    "VideoEngagement": {
+      "title": "Video Engagement",
+      "description": "Interactive tracking events for social proof analytics",
+      "type": "object",
+      "properties": {
+        "eventName": { "type": "string" },
+        "videoTitle": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["eventName", "videoTitle", "createdAt"]
     }
   },
   "firestore": {
@@ -55,6 +76,14 @@
     "/admins/{adminId}": {
       "schema": { "$ref": "#/entities/Admin" },
       "description": "Whitelist for admin access"
+    },
+    "/video_settings/{docId}": {
+      "schema": { "$ref": "#/entities/VideoSettings" },
+      "description": "Dynamic video URLs configuration"
+    },
+    "/video_engagement/{engageId}": {
+      "schema": { "$ref": "#/entities/VideoEngagement" },
+      "description": "Video player interaction event tracking"
     }
   }
 }

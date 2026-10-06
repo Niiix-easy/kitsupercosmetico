@@ -42,5 +42,17 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if false; // Only manageable via Admin SDK or Firebase Console
     }
+
+    // Video Settings: Anyone can read, but only admins can update/write
+    match /video_settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Video Engagement: Anyone can create engagement logs, only admins can read
+    match /video_engagement/{engageId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
   }
 }
