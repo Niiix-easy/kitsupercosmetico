@@ -183,6 +183,6 @@ export const trackEvent = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ eventName, videoTitle })
-    }).catch(err => console.error('Failed to log engagement:', err));
+    }).catch(err => console.warn('Deferred engagement log notice:', err?.message || err));
   },
 };

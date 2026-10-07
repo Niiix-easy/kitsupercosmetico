@@ -1,11 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, Sparkles, CheckCircle2, ArrowRight, Maximize, Upload, Loader2, Camera } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { 
+  Play, 
+  Pause, 
+  Volume2, 
+  VolumeX, 
+  Sparkles, 
+  CheckCircle2, 
+  ArrowRight, 
+  Maximize, 
+  Loader2, 
+  WifiOff, 
+  RefreshCw 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackEvent } from '../utils/pixelTracking';
+import { getVideoFromCache } from '../utils/videoCacheManager';
+import { normalizeVideoAssetUrl } from '../utils/videoUrlResolver';
+import { useVideoPreload } from '../hooks/useVideoPreload';
+import { useNetworkStatus } from '../hooks/useNetworkStatus';
 
 interface VideoItem {
   id: string;
   url: string;
+  poster: string;
   title: string;
   subtitle: string;
   description: string;
@@ -24,41 +41,150 @@ const VideoCard: React.FC<{
   video: VideoItem; 
   isGlobalMuted: boolean; 
   onMuteToggle: () => void; 
-  onGlobalPlay: (id: string) => void; 
-  isActive: boolean;
+  activePlayingId: string | null;
+  onCardPlay: (id: string) => void;
   index: number;
-  onRefresh: () => void;
+  preloadMode: 'none' | 'metadata' | 'auto';
+  hasEnteredViewport: boolean;
+  isOnline: boolean;
+  onRetryConnection: () => void;
+  isCheckingNetwork: boolean;
 }> = ({ 
   video, 
   isGlobalMuted, 
   onMuteToggle,
-  onGlobalPlay,
-  isActive,
+  activePlayingId,
+  onCardPlay,
   index,
-  onRefresh
+  preloadMode,
+  hasEnteredViewport,
+  isOnline,
+  onRetryConnection,
+  isCheckingNetwork
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  
+  // Normalize video and poster URLs across dev and production environments
+  const normalizedVideoUrl = normalizeVideoAssetUrl(video.url, `${video.id}.mp4`);
+  const normalizedPosterUrl = normalizeVideoAssetUrl(video.poster, `${video.id}_poster.webp`);
+  
+  const [currentSrc, setCurrentSrc] = useState<string>(normalizedVideoUrl);
   const [playedSeconds, setPlayedSeconds] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [error, setError] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadPercent, setUploadPercent] = useState(0);
-  
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
   // Tracking states
   const [hasStarted, setHasStarted] = useState(false);
   const [hasReached50, setHasReached50] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
 
+  // Runtime verification: Check HTTP status (200/206 vs 404/500) and compare with public/ file
   useEffect(() => {
-    if (!isActive && isPlaying) {
+    let isCancelled = false;
+    const targetPublicFile = `public/${video.id}.mp4`;
+
+    console.log(`[VideoShowcase-Debug] Initializing asset resolution:`, {
+      slot: video.id,
+      rawUrl: video.url,
+      normalizedUrl: normalizedVideoUrl,
+      viteBaseUrl: import.meta.env.BASE_URL,
+      expectedPublicFile: targetPublicFile
+    });
+
+    fetch(normalizedVideoUrl, { method: 'HEAD' })
+      .then(res => {
+        if (isCancelled) return;
+        const contentType = res.headers.get('content-type') || 'unknown';
+        const contentLength = res.headers.get('content-length') || 'unknown';
+
+        if (res.status === 200 || res.status === 206) {
+          console.log(`[VideoShowcase-Debug] ✅ Server verified asset for ${video.id}:`, {
+            status: `${res.status} ${res.statusText}`,
+            url: normalizedVideoUrl,
+            contentType,
+            contentLengthBytes: contentLength,
+            localDiskOrigin: targetPublicFile
+          });
+        } else if (res.status === 404) {
+          console.error(`[VideoShowcase-Error] ❌ Server returned 404 NOT FOUND for ${video.id}:`, {
+            requestedUrl: normalizedVideoUrl,
+            expectedFileLocation: targetPublicFile,
+            note: 'File may be missing from public/ directory or dist/ directory during runtime.'
+          });
+          setLoadError(true);
+        } else if (res.status >= 500) {
+          console.error(`[VideoShowcase-Error] ❌ Server returned ${res.status} SERVER ERROR for ${video.id} (${normalizedVideoUrl}).`);
+          setLoadError(true);
+        }
+      })
+      .catch(err => {
+        if (!isCancelled) {
+          console.error(`[VideoShowcase-Error] Network reachability test failed for ${video.id}:`, {
+            url: normalizedVideoUrl,
+            error: err?.message || err
+          });
+        }
+      });
+
+    return () => { isCancelled = true; };
+  }, [normalizedVideoUrl, video.id]);
+
+  // Check CacheStorage when viewport entered, without interrupting active playback
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkCache = async () => {
+      try {
+        const cachedUrl = await getVideoFromCache(normalizedVideoUrl);
+        if (cachedUrl && isMounted && videoRef.current?.paused) {
+          console.log(`[VideoShowcase-Debug] Using local CacheStorage blob for ${video.id}: ${cachedUrl}`);
+          setCurrentSrc(cachedUrl);
+        }
+      } catch (err) {
+        console.warn(`[VideoShowcase-Warn] CacheStorage check skipped for ${video.id}:`, err);
+      }
+    };
+
+    if (hasEnteredViewport) {
+      checkCache();
+    }
+
+    const handleCacheCleared = (e: Event) => {
+      const customEv = e as CustomEvent;
+      const target = customEv.detail?.target;
+      if (target === 'all' || (typeof target === 'string' && target.includes(video.id))) {
+        const freshUrl = `${normalizedVideoUrl.split('?')[0]}?bust=${Date.now()}`;
+        console.log(`[VideoShowcase-Debug] Cache cleared event received, refreshing ${video.id}: ${freshUrl}`);
+        setCurrentSrc(freshUrl);
+      }
+    };
+
+    window.addEventListener('video-cache-cleared', handleCacheCleared);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('video-cache-cleared', handleCacheCleared);
+    };
+  }, [normalizedVideoUrl, video.id, hasEnteredViewport]);
+
+  // When another video starts playing, pause this one cleanly
+  useEffect(() => {
+    if (activePlayingId && activePlayingId !== video.id && isPlaying) {
       videoRef.current?.pause();
       setIsPlaying(false);
     }
-  }, [isActive]);
+  }, [activePlayingId, video.id, isPlaying]);
 
+  // Sync mute state
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isGlobalMuted;
+    }
+  }, [isGlobalMuted]);
+
+  // Analytics tracking
   useEffect(() => {
     if (isPlaying && !hasStarted) {
       trackEvent.trackVideo('video_start', video.title);
@@ -76,22 +202,59 @@ const VideoCard: React.FC<{
         setHasFinished(true);
       }
     }
-  }, [isPlaying, playedSeconds, duration]);
+  }, [isPlaying, playedSeconds, duration, hasStarted, hasReached50, hasFinished, video.title]);
 
+  // End-to-end user click execution ("Assistir")
   const handleTogglePlay = async () => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        onGlobalPlay(video.id);
-        try {
-          await videoRef.current.play();
-          setIsPlaying(true);
-        } catch (err: any) {
-          if (err.name !== 'AbortError') console.warn('Playback interrupted:', err);
-        }
-      } else {
-        videoRef.current.pause();
-        setIsPlaying(false);
+    if (!isOnline) {
+      onRetryConnection();
+      return;
+    }
+
+    const el = videoRef.current;
+    if (!el) return;
+
+    console.log(`[VideoShowcase-Debug] User clicked Play/Assistir on ${video.id}:`, {
+      paused: el.paused,
+      readyState: el.readyState,
+      muted: el.muted,
+      currentSrc: el.currentSrc || currentSrc
+    });
+
+    if (el.paused) {
+      // Announce to parent to coordinate single-video audio focus
+      onCardPlay(video.id);
+
+      // If the media element has not initialized its source yet, assign and load
+      if (!el.src || el.src === '' || el.currentSrc === '') {
+        el.src = currentSrc;
+        el.load();
       }
+
+      try {
+        el.muted = isGlobalMuted;
+        await el.play();
+        setIsPlaying(true);
+        setIsBuffering(false);
+        console.log(`[VideoShowcase-Debug] ▶️ Video execution successful for ${video.id}`);
+      } catch (err: any) {
+        console.warn(`[VideoShowcase-Warn] Direct unmuted play failed for ${video.id}: ${err?.message}. Attempting muted fallback.`);
+        // Fallback: If browser audio policy restricted unmuted playback, start muted
+        try {
+          el.muted = true;
+          await el.play();
+          setIsPlaying(true);
+          setIsBuffering(false);
+          console.log(`[VideoShowcase-Debug] ▶️ Video execution succeeded via muted fallback for ${video.id}`);
+        } catch (fallbackErr: any) {
+          console.error(`[VideoShowcase-Error] Final play execution failed for ${video.id}:`, fallbackErr);
+          setLoadError(true);
+        }
+      }
+    } else {
+      el.pause();
+      setIsPlaying(false);
+      console.log(`[VideoShowcase-Debug] ⏸ Video paused for ${video.id}`);
     }
   };
 
@@ -99,7 +262,7 @@ const VideoCard: React.FC<{
     if (videoRef.current && duration > 0) {
       const rect = e.currentTarget.getBoundingClientRect();
       const fraction = (e.clientX - rect.left) / rect.width;
-      const targetTime = fraction * duration;
+      const targetTime = Math.max(0, Math.min(fraction * duration, duration));
       videoRef.current.currentTime = targetTime;
       setPlayedSeconds(targetTime);
     }
@@ -111,66 +274,8 @@ const VideoCard: React.FC<{
         document.exitFullscreen();
       } else {
         containerRef.current.requestFullscreen().catch(err => {
-          console.error(`Error: ${err.message}`);
+          console.error(`Fullscreen Error: ${err.message}`);
         });
-      }
-    }
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 100 * 1024 * 1024) {
-        alert("O vídeo excede o limite de 100MB.");
-        return;
-      }
-
-      setIsUploading(true);
-      setUploadPercent(0);
-
-      const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks (extremely safe for Nginx limits)
-      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-      const slotId = `video_${index + 1}`;
-
-      try {
-        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-          const start = chunkIndex * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, file.size);
-          const chunk = file.slice(start, end);
-
-          // Convert chunk to base64
-          const dataUrl = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => resolve(event.target?.result as string);
-            reader.onerror = (err) => reject(err);
-            reader.readAsDataURL(chunk);
-          });
-
-          const response = await fetch('/api/upload-video-chunk', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId: slotId, chunkIndex, totalChunks, dataUrl })
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-            throw new Error(errorData.error || 'Erro no envio do pedaço.');
-          }
-
-          const data = await response.json();
-          const percent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-          setUploadPercent(percent);
-
-          if (data.completed) {
-            onRefresh();
-            setError(false);
-          }
-        }
-      } catch (err: any) {
-        console.error("Upload error:", err);
-        alert(`Falha no upload: ${err.message || 'Conexão recusada.'}`);
-      } finally {
-        setIsUploading(false);
       }
     }
   };
@@ -186,107 +291,187 @@ const VideoCard: React.FC<{
       ref={containerRef}
       className="group bg-[#14151c] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 hover:border-amber-500/40 flex flex-col h-full relative"
     >
-      {/* Hidden File Input */}
-      <input 
-        type="file" 
-        accept="video/*" 
-        className="hidden" 
-        ref={fileInputRef} 
-        onChange={handleFileUpload} 
-      />
-
-      {/* Admin Upload UI */}
-      <div className="absolute top-4 right-4 z-40 flex gap-2">
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/60 border border-amber-500/30 text-amber-400 hover:bg-amber-500 hover:text-black transition-all backdrop-blur-md shadow-lg disabled:opacity-50 text-[10px] font-bold uppercase tracking-wider group/btn"
-          title="Fazer upload de vídeo do seu PC (MP4)"
+      {/* Video Container (Reels aspect 9:16) */}
+      <div 
+        className="relative aspect-[9/16] w-full bg-[#0a0a0c] overflow-hidden cursor-pointer group-hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]"
+        onClick={handleTogglePlay}
+      >
+        {/* Video Element - Preload controlled by viewport entry */}
+        <video
+          ref={videoRef}
+          src={currentSrc}
+          poster={normalizedPosterUrl}
+          playsInline
+          muted={isGlobalMuted}
+          loop
+          preload={hasEnteredViewport ? 'metadata' : 'none'}
+          onLoadedMetadata={(e) => {
+            const metaDuration = e.currentTarget.duration;
+            setDuration(metaDuration);
+            setLoadError(false);
+            console.log(`[VideoShowcase-Debug] 🎬 Metadata loaded for ${video.id}:`, {
+              durationSecs: metaDuration.toFixed(1),
+              resolution: `${e.currentTarget.videoWidth}x${e.currentTarget.videoHeight}`,
+              src: e.currentTarget.currentSrc
+            });
+          }}
+          onTimeUpdate={(e) => {
+            setPlayedSeconds(e.currentTarget.currentTime);
+            if (isBuffering) setIsBuffering(false);
+          }}
+          onWaiting={() => {
+            if (isOnline) {
+              console.log(`[VideoShowcase-Debug] ⏳ Video waiting/buffering for ${video.id} at time=${videoRef.current?.currentTime.toFixed(1)}s`);
+              setIsBuffering(true);
+            }
+          }}
+          onPlaying={() => {
+            setIsBuffering(false);
+            setIsPlaying(true);
+            console.log(`[VideoShowcase-Debug] ▶️ Video active playing event for ${video.id}`);
+          }}
+          onCanPlay={() => {
+            setIsBuffering(false);
+          }}
+          onCanPlayThrough={() => {
+            setIsBuffering(false);
+          }}
+          onSeeked={() => {
+            setIsBuffering(false);
+          }}
+          onPause={() => {
+            setIsPlaying(false);
+          }}
+          onPlay={() => {
+            setIsPlaying(true);
+            setIsBuffering(false);
+          }}
+          onError={(e) => {
+            const mediaErr = e.currentTarget.error;
+            console.error(`[VideoShowcase-Error] 🚨 HTMLVideoElement error on ${video.id}:`, {
+              code: mediaErr?.code,
+              message: mediaErr?.message,
+              currentSrc: e.currentTarget.currentSrc,
+              readyState: e.currentTarget.readyState,
+              networkState: e.currentTarget.networkState,
+              publicFile: `public/${video.id}.mp4`
+            });
+            if (isOnline) {
+              setLoadError(true);
+            }
+          }}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
         >
-          {isUploading ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Upload className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
+          {video.captions && (
+            <track kind="captions" src={video.captions} srcLang="pt-BR" label="Português" default />
           )}
-          <span>{isUploading ? 'Enviando...' : 'Trocar Vídeo'}</span>
-        </button>
-      </div>
+        </video>
 
-      {/* Video Container */}
-      <div className="relative aspect-[9/16] w-full bg-[#0a0a0c] overflow-hidden cursor-pointer group-hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-        {!isUploading && (
-          <video
-            key={video.url}
-            ref={videoRef}
-            src={video.url}
-            playsInline
-            autoPlay
-            muted={isGlobalMuted}
-            loop
-            preload="metadata"
-            onLoadedMetadata={(e) => {
-              setDuration(e.currentTarget.duration);
-              setError(false);
-            }}
-            onTimeUpdate={(e) => setPlayedSeconds(e.currentTarget.currentTime)}
-            onError={() => {
-              // Only set error if we actually have a URL but it fails
-              if (video.url.split('?')[0] !== '/') {
-                setError(true);
-              }
-            }}
-            onClick={handleTogglePlay}
-            className={`w-full h-full object-cover transition-all duration-700 ${isPlaying ? 'scale-100' : 'scale-105 blur-[2px] opacity-60'}`}
-          >
-            {video.captions && (
-              <track kind="captions" src={video.captions} srcLang="pt-BR" label="Português" default />
-            )}
-          </video>
-        )}
-        
-        {/* Error or Missing Video Fallback */}
-        {(error || isUploading) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0c0d10] p-6 text-center border-2 border-dashed border-slate-800 m-2 rounded-xl">
-            {isUploading ? (
-              <>
-                <Loader2 className="w-10 h-10 text-amber-500 animate-spin mb-4" />
-                <p className="text-white font-bold">Processando vídeo... ({uploadPercent}%)</p>
-                <p className="text-slate-500 text-xs mt-2">Isso pode levar alguns segundos dependendo do tamanho.</p>
-              </>
-            ) : (
-              <>
-                <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-700">
-                  <Camera className="w-8 h-8 text-slate-500" />
-                </div>
-                <h4 className="text-white font-bold mb-2">Vídeo não encontrado</h4>
-                <p className="text-slate-400 text-xs mb-6 px-4">
-                  Esta seção aguarda um vídeo real do produto para converter seus clientes.
-                </p>
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-6 py-3 bg-amber-500 text-black font-black text-[11px] uppercase tracking-widest rounded-lg hover:bg-amber-400 transition-colors flex items-center gap-2 shadow-lg shadow-amber-500/20"
-                >
-                  <Upload className="w-4 h-4" />
-                  Selecionar do meu PC
-                </button>
-              </>
-            )}
+        {/* Offline Overlay State */}
+        {!isOnline && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm p-6 text-center">
+            <img 
+              src={normalizedPosterUrl} 
+              alt={video.title} 
+              className="absolute inset-0 w-full h-full object-cover opacity-25" 
+            />
+            <div className="relative z-10 flex flex-col items-center max-w-[200px]">
+              <div className="w-12 h-12 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center mb-3 text-rose-400">
+                <WifiOff className="w-6 h-6" />
+              </div>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-1">
+                Você Está Offline
+              </h4>
+              <p className="text-slate-400 text-[11px] leading-relaxed mb-4">
+                Vídeo em pausa. Clique para reconectar.
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRetryConnection();
+                }}
+                disabled={isCheckingNetwork}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black text-[10px] font-black uppercase tracking-wider hover:brightness-110 transition-all flex items-center gap-1.5 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+              >
+                {isCheckingNetwork ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-3.5 h-3.5" />
+                )}
+                <span>Tentar Novamente</span>
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 pointer-events-none" />
+        {/* Custom Loading Spinner (Activated on 'waiting' event listener) */}
+        <AnimatePresence>
+          {isBuffering && isOnline && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/50 backdrop-blur-[2px] pointer-events-none"
+            >
+              <div className="relative flex items-center justify-center mb-3">
+                <div className="w-14 h-14 rounded-full border-2 border-amber-500/20 border-t-amber-400 animate-spin" />
+                <Sparkles className="w-5 h-5 text-amber-400 absolute animate-pulse" />
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/80 border border-amber-500/30 text-amber-300 text-[11px] font-bold uppercase tracking-wider shadow-lg">
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                <span>Carregando vídeo...</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Play Button Overlay (Centered) */}
-        {!isPlaying && !error && !isUploading && (
-          <div 
-            onClick={handleTogglePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] group-hover:bg-black/10 transition-colors z-20"
-          >
+        {/* Fallback Poster Preview if loading error occurs */}
+        {loadError && isOnline && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0e0f14] p-4 text-center z-20">
+            <img 
+              src={normalizedPosterUrl} 
+              alt={video.title} 
+              className="w-full h-full object-cover absolute inset-0 opacity-40 blur-sm" 
+            />
+            <div className="relative z-10 p-4 rounded-xl bg-black/80 border border-amber-500/30 text-center max-w-[85%]">
+              <Sparkles className="w-6 h-6 text-amber-400 mx-auto mb-2" />
+              <p className="text-white font-bold text-xs mb-1">Assistir Demonstração</p>
+              <p className="text-slate-400 text-[11px]">Toque para recarregar o vídeo.</p>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLoadError(false);
+                  const fresh = `${normalizedVideoUrl.split('?')[0]}?retry=${Date.now()}`;
+                  setCurrentSrc(fresh);
+                  if (videoRef.current) {
+                    videoRef.current.src = fresh;
+                    videoRef.current.load();
+                  }
+                }}
+                className="mt-3 px-3 py-1.5 rounded-lg bg-amber-500 text-black text-[10px] font-black uppercase tracking-wider hover:bg-amber-400 transition-colors cursor-pointer"
+              >
+                Recarregar Vídeo
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Gradient Overlay for Controls Visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 pointer-events-none" />
+
+        {/* Play Button Overlay (Centered, shown when paused and not buffering and online) */}
+        {!isPlaying && !isBuffering && !loadError && isOnline && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/25 backdrop-blur-[1px] group-hover:bg-black/10 transition-colors z-20 pointer-events-none">
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-16 h-16 rounded-full bg-amber-400/90 text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300"
+              className="w-16 h-16 rounded-full bg-amber-400 text-black flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300 pointer-events-auto cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleTogglePlay();
+              }}
+              title="Assistir Vídeo"
             >
               <Play className="w-7 h-7 fill-black translate-x-0.5" />
             </motion.div>
@@ -294,23 +479,22 @@ const VideoCard: React.FC<{
         )}
 
         {/* Top Tag Overlay */}
-        <div className="absolute top-4 left-4 z-30">
-          <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-amber-400/30 text-amber-300 text-[10px] font-bold uppercase tracking-wider">
+        <div className="absolute top-4 left-4 z-30 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md border border-amber-400/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider shadow-lg">
             {video.tag}
           </span>
         </div>
 
         {/* Custom Controls Bar */}
-        <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/95 to-transparent z-30 space-y-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          
+        <div 
+          className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black via-black/80 to-transparent z-30 space-y-3 opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Progress Bar */}
           <div className="flex flex-col gap-1.5">
             <div 
               className="w-full h-1.5 bg-slate-700/60 rounded-full cursor-pointer relative overflow-hidden"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSeek(e);
-              }}
+              onClick={handleSeek}
             >
               <motion.div 
                 className="h-full bg-gradient-to-r from-amber-400 to-amber-500 absolute left-0 top-0"
@@ -327,21 +511,15 @@ const VideoCard: React.FC<{
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleTogglePlay();
-                }}
+                onClick={handleTogglePlay}
                 className="p-2 rounded-lg bg-white/10 hover:bg-amber-400 hover:text-black text-white transition-all cursor-pointer"
-                title={isPlaying ? "Pausar" : "Reproduzir"}
+                title={isPlaying ? "Pausar" : "Assistir"}
               >
                 {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
               </button>
 
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMuteToggle();
-                }}
+                onClick={onMuteToggle}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
                 title={isGlobalMuted ? "Ativar som" : "Silenciar"}
               >
@@ -350,10 +528,7 @@ const VideoCard: React.FC<{
             </div>
 
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleFullscreen();
-              }}
+              onClick={handleFullscreen}
               className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
               title="Tela cheia"
             >
@@ -363,7 +538,7 @@ const VideoCard: React.FC<{
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content description */}
       <div className="p-6 flex-1 flex flex-col justify-between">
         <div>
           <h3 className="text-white font-bold text-lg font-serif-display">{video.title}</h3>
@@ -372,9 +547,9 @@ const VideoCard: React.FC<{
             {video.description}
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/10 px-2 py-1 rounded-md self-start">
+        <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1 rounded-md self-start">
           <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Resultado Comprovado</span>
+          <span>Resultado Comprovado em Salão</span>
         </div>
       </div>
     </motion.div>
@@ -382,9 +557,19 @@ const VideoCard: React.FC<{
 };
 
 export const ProductVideoShowcase: React.FC = () => {
-  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const showcaseRef = useRef<HTMLElement | null>(null);
+  
+  // Custom Hook: Defer metadata loading with Intersection Observer API
+  const { hasEnteredViewport, preloadMode } = useVideoPreload(showcaseRef, {
+    rootMargin: '200px',
+    threshold: 0.05,
+  });
+
+  // Custom Hook: Network connection monitor
+  const { isOnline, isChecking, checkConnection } = useNetworkStatus();
+
+  const [activePlayingId, setActivePlayingId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({
     video_1: '/video_1.mp4',
     video_2: '/video_2.mp4',
@@ -394,45 +579,100 @@ export const ProductVideoShowcase: React.FC = () => {
   useEffect(() => {
     fetch('/api/video-urls')
       .then(res => res.json())
-      .then(data => setVideoUrls(data))
-      .catch(err => console.error('Failed to load dynamic video CDN URLs:', err));
-  }, [refreshKey]);
-  
-  // Using absolute paths with timestamp for cache busting
+      .then(data => {
+        if (data && typeof data === 'object') {
+          console.log('[VideoShowcase-Debug] Fetched dynamic video URLs configuration:', data);
+          setVideoUrls(prev => ({ ...prev, ...data }));
+        }
+      })
+      .catch(err => console.error('[VideoShowcase-Error] Failed to load video URLs endpoint:', err));
+  }, []);
+
+  const handleCardPlay = useCallback((id: string) => {
+    setActivePlayingId(id);
+  }, []);
+
   const videos: VideoItem[] = [
     {
-      id: 'v1',
-      url: videoUrls.video_1.includes('?') ? `${videoUrls.video_1}&t=${refreshKey}` : `${videoUrls.video_1}?t=${refreshKey}`,
+      id: 'video_1',
+      url: videoUrls.video_1 || '/video_1.mp4',
+      poster: '/video_1_poster.webp',
       title: 'Apresentação Dyusar',
       subtitle: 'Tratamento de Salão em Casa',
-      description: 'Conheça o kit Super Reconstrução que está revolucionando o cuidado capilar com resultados profissionais.',
+      description: 'Conheça o kit Super Reconstrução que está revolucionando o cuidado capilar com resultados profissionais imediatos.',
       tag: 'Especialista Indica'
     },
     {
-      id: 'v2',
-      url: videoUrls.video_2.includes('?') ? `${videoUrls.video_2}&t=${refreshKey}` : `${videoUrls.video_2}?t=${refreshKey}`,
+      id: 'video_2',
+      url: videoUrls.video_2 || '/video_2.mp4',
+      poster: '/video_2_poster.webp',
       title: 'Passo a Passo Real',
       subtitle: 'Aplicação e Textura',
-      description: 'Veja como aplicar corretamente para obter a máxima performance de reconstrução e brilho.',
+      description: 'Veja como aplicar corretamente para obter a máxima performance de reconstrução, maciez e brilho intenso.',
       tag: 'Tutorial Completo'
     },
     {
-      id: 'v3',
-      url: videoUrls.video_3.includes('?') ? `${videoUrls.video_3}&t=${refreshKey}` : `${videoUrls.video_3}?t=${refreshKey}`,
+      id: 'video_3',
+      url: videoUrls.video_3 || '/video_3.mp4',
+      poster: '/video_3_poster.webp',
       title: 'Efeito Teia & Brilho',
       subtitle: 'Resultado de Transformação',
-      description: 'Sinta a potência da máscara concentrada e o resultado de um fio 100% recuperado e selado.',
+      description: 'Sinta a potência da máscara concentrada e o resultado de um fio 100% recuperado, alinhado e selado.',
       tag: 'Resultado Real'
     }
   ];
 
   return (
-    <section className="py-16 lg:py-24 bg-[#0c0d10] relative overflow-hidden border-t border-amber-500/10">
+    <section 
+      ref={showcaseRef} 
+      className="py-16 lg:py-24 bg-[#0c0d10] relative overflow-hidden border-t border-amber-500/10"
+    >
       {/* Background Glow */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-500/5 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Offline Banner Notification */}
+        <AnimatePresence>
+          {!isOnline && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-8 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between flex-wrap gap-4 shadow-xl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400">
+                  <WifiOff className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-white text-sm font-bold flex items-center gap-2">
+                    <span>Conexão Offline Detectada</span>
+                    <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-[10px] font-mono uppercase">Sem internet</span>
+                  </h4>
+                  <p className="text-slate-300 text-xs mt-0.5">
+                    Os vídeos pausaram para poupar seus dados. Eles serão restaurados automaticamente assim que o sinal voltar.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={checkConnection}
+                disabled={isChecking}
+                className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-lg shadow-rose-500/20 cursor-pointer disabled:opacity-50"
+              >
+                {isChecking ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                <span>Verificar Conexão</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -460,9 +700,13 @@ export const ProductVideoShowcase: React.FC = () => {
                 index={idx}
                 isGlobalMuted={isMuted} 
                 onMuteToggle={() => setIsMuted(!isMuted)}
-                onGlobalPlay={(id) => setActiveVideoId(id)}
-                isActive={activeVideoId === video.id}
-                onRefresh={() => setRefreshKey(Date.now())}
+                activePlayingId={activePlayingId}
+                onCardPlay={handleCardPlay}
+                preloadMode={preloadMode}
+                hasEnteredViewport={hasEnteredViewport}
+                isOnline={isOnline}
+                onRetryConnection={checkConnection}
+                isCheckingNetwork={isChecking}
               />
             ))}
           </AnimatePresence>
@@ -490,6 +734,3 @@ export const ProductVideoShowcase: React.FC = () => {
     </section>
   );
 };
-
-
-

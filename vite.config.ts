@@ -113,32 +113,77 @@ function kitUploadPlugin() {
             try {
               const { videoId, dataUrl } = JSON.parse(body);
 
-              if (!videoId || !dataUrl || !dataUrl.startsWith('data:video/')) {
+              if (!videoId || !dataUrl) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Dados incompletos' }));
+                return;
+              }
+
+              // Extract and validate MIME type strictly to reject non-video uploads
+              const mimeMatch = dataUrl.match(/^data:([^;]+);base64,/);
+              if (!mimeMatch) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Formato de dados de vídeo inválido.' }));
+                return;
+              }
+
+              const mimeType = mimeMatch[1];
+              console.log(`[MIME-Validation] Checking uploaded file MIME type: ${mimeType}`);
+              if (!mimeType.startsWith('video/')) {
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ 
-                  error: 'Formato de vídeo inválido. Certifique-se de enviar um arquivo MP4.' 
+                  error: `MIME type não permitido: ${mimeType}. Apenas arquivos de vídeo são aceitos.` 
                 }));
                 return;
               }
 
-              const base64Data = dataUrl.replace(/^data:video\/mp4;base64,/, '');
+              const base64Data = dataUrl.split(';base64,').pop();
+              if (!base64Data) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Mídia corrompida ou formato de base64 inválido.' }));
+                return;
+              }
+
               const buffer = Buffer.from(base64Data, 'base64');
 
               if (buffer.length > MAX_VIDEO_SIZE_BYTES) {
                 const sizeMB = (buffer.length / (1024 * 1024)).toFixed(1);
                 res.writeHead(400, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ 
-                  error: `O vídeo excede o tamanho máximo permitido de 50MB (${sizeMB}MB enviado).` 
+                  error: `O vídeo excede o tamanho máximo permitido de 100MB (${sizeMB}MB enviado).` 
                 }));
                 return;
               }
 
               const filename = `${videoId}.mp4`;
               const p = path.join(__dirname, 'public', filename);
-              fs.writeFileSync(p, buffer);
+              
+              // Ensure public directory exists
+              if (!fs.existsSync(path.dirname(p))) {
+                fs.mkdirSync(path.dirname(p), { recursive: true });
+              }
 
-              const distP = path.join(__dirname, 'dist', filename);
-              if (fs.existsSync(path.dirname(distP))) fs.writeFileSync(distP, buffer);
+              // Write file and verify physically on disk
+              fs.writeFileSync(p, buffer);
+              const fileExistsPublic = fs.existsSync(p);
+              console.log(`[Path-Trace] Writing to development public directory. Path: ${p}, Size: ${buffer.length} bytes, Successfully written: ${fileExistsPublic}`);
+
+              const distDir = path.join(__dirname, 'dist');
+              let fileExistsDist = false;
+              if (fs.existsSync(distDir)) {
+                const distP = path.join(distDir, filename);
+                fs.writeFileSync(distP, buffer);
+                fileExistsDist = fs.existsSync(distP);
+                console.log(`[Path-Trace] Writing to production dist directory. Path: ${distP}, Size: ${buffer.length} bytes, Successfully written: ${fileExistsDist}`);
+              } else {
+                console.log(`[Path-Trace] Production dist directory does not exist yet at: ${distDir}`);
+              }
+
+              if (!fileExistsPublic) {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Erro ao verificar a gravação física do arquivo de vídeo no servidor.' }));
+                return;
+              }
 
               res.writeHead(200, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ 
