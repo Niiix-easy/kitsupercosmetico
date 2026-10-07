@@ -105,7 +105,7 @@ export const RecurringNewsletterToast: React.FC<RecurringNewsletterToastProps> =
             <input
               type="text"
               required
-              placeholder="Seu WhatsApp ou E-mail"
+              placeholder="WhatsApp: (66) 99677-2704 ou e-mail"
               value={contactInput}
               onChange={(e) => setContactInput(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400 transition-colors"

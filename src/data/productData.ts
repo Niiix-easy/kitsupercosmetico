@@ -199,7 +199,7 @@ export const FAQ_DATA = [
   },
   {
     question: 'Como funciona a Garantia Incondicional de 7 Dias?',
-    answer: 'Nós confiamos tanto na fórmula Dyusar que oferecemos 7 dias de teste incondicional. Se você não notar seu cabelo mais resistente, encorpado e brilhante, basta enviar uma mensagem no WhatsApp do nosso suporte oficial e devolveremos 100% do seu dinheiro sem questionamentos.'
+    answer: 'Nós confiamos tanto na fórmula Dyusar que oferecemos 7 dias de teste incondicional. Se você não notar seu cabelo mais resistente, encorpado e brilhante, basta enviar uma mensagem no WhatsApp do nosso suporte oficial (66) 99677-2704 e devolveremos 100% do seu dinheiro sem questionamentos.'
   },
   {
     question: 'Qual o prazo de envio e rastreamento?',

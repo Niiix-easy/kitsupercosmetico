@@ -12,7 +12,7 @@ export const TrustBadgesSection: React.FC = () => {
       description: 'Teste por 7 dias. Se não notar recuperação da maciez e elasticidade, devolvemos 100% do seu dinheiro.',
       highlight: 'Satisfação Blindada',
       policyTitle: 'Política de Garantia Blindada Dyusar 7 Dias',
-      policyDetail: 'A Dyusar assegura o compromisso de satisfação incondicional: aplique o protocolo completo de 4 passos. Se em até 7 dias após o recebimento você considerar que o resultado não atendeu às suas expectativas, basta enviar uma mensagem para nosso suporte oficial no WhatsApp ou e-mail com o número do seu pedido. Devolvemos 100% do valor pago, sem burocracia, sem perguntas desconfortáveis e sem taxas ocultas.'
+      policyDetail: 'A Dyusar assegura o compromisso de satisfação incondicional: aplique o protocolo completo de 4 passos. Se em até 7 dias após o recebimento você considerar que o resultado não atendeu às suas expectativas, basta enviar uma mensagem para nosso suporte oficial no WhatsApp (66) 99677-2704 ou e-mail com o número do seu pedido. Devolvemos 100% do valor pago, sem burocracia, sem perguntas desconfortáveis e sem taxas ocultas.'
     },
     {
       icon: Award,

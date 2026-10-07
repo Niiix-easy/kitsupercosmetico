@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FAQ_DATA } from '../data/productData';
 import { ChevronDown } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 export const FAQSection: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0); // first item open by default
@@ -89,17 +90,20 @@ export const FAQSection: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-bold text-white">Ainda tem dúvidas sobre o seu cabelo?</p>
-              <p className="text-xs text-slate-400">Nossa equipe de especialistas capilares atende você ao vivo no WhatsApp.</p>
+              <p className="text-xs text-slate-400">
+                Nossa equipe de especialistas atende você ao vivo no WhatsApp: <strong className="text-emerald-400 font-semibold">{WHATSAPP_FORMATTED}</strong>
+              </p>
             </div>
           </div>
 
           <a
-            href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20tenho%20d%C3%BAvidas%20sobre%20o%20Kit%20Super%20Reconstru%C3%A7%C3%A3o%20Dyusar"
+            href={getWhatsAppUrl('Olá, tenho dúvidas sobre o Kit Super Reconstrução Dyusar!')}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider transition-colors shrink-0"
+            className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs uppercase tracking-wider transition-colors shrink-0 flex items-center gap-2"
           >
-            Falar no WhatsApp
+            <WhatsAppIcon className="w-4 h-4 text-black" />
+            <span>Falar no WhatsApp</span>
           </a>
         </div>
 

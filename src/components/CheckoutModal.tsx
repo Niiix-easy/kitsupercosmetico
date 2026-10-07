@@ -5,6 +5,8 @@ import { CartItem } from '../types';
 import axios from 'axios';
 import { db } from '../lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -236,7 +238,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(11) 99999-9999"
+                  placeholder="(66) 99677-2704"
                   className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-amber-400 font-mono"
                 />
               </div>
@@ -322,6 +324,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <span>Continuar para Pagamento</span>
               <ArrowRight className="w-4 h-4" />
             </button>
+
+            <div className="pt-2 flex items-center justify-center gap-1.5 text-xs text-slate-400">
+              <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
+              <span>Dúvida no pedido? Peça ajuda no WhatsApp:</span>
+              <a
+                href={getWhatsAppUrl('Olá! Gostaria de tirar dúvidas para finalizar minha compra no site Dyusar.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-[#25D366] hover:underline"
+              >
+                {WHATSAPP_FORMATTED}
+              </a>
+            </div>
           </form>
         )}
 
@@ -662,6 +677,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             <div className="pt-2 space-y-2">
+              <a
+                href={getWhatsAppUrl('Olá! Acabei de finalizar meu pedido #DY-94821 na Dyusar Cosméticos. Gostaria de acompanhar a entrega.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
+              >
+                <WhatsAppIcon className="w-4 h-4 text-white" />
+                <span>Acompanhar no WhatsApp ({WHATSAPP_FORMATTED})</span>
+              </a>
+
               <button
                 type="button"
                 onClick={onClose}

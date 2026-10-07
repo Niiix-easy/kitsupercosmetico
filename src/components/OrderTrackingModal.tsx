@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, X, Package, Truck, CheckCircle2, Clock, MapPin, ArrowRight, ShieldCheck } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 interface OrderTrackingModalProps {
   isOpen: boolean;
@@ -209,11 +210,11 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, 
             <div>
               <p className="font-bold text-white leading-tight">Precisa de ajuda com a sua entrega?</p>
               <p className="text-[11px] text-slate-300 mt-0.5">
-                Nossa equipe de suporte está online no WhatsApp.
+                Suporte online no WhatsApp: <strong className="text-emerald-400">{WHATSAPP_FORMATTED}</strong>
               </p>
             </div>
             <a
-              href="https://wa.me/5511999999999?text=Ola,%20gostaria%20de%20ajuda%20com%20o%20rastreio%20do%20meu%20pedido%20Dyusar"
+              href={getWhatsAppUrl(`Olá! Gostaria de ajuda para rastrear o meu pedido ${trackingId ? `#${trackingId}` : 'Dyusar'}.`)}
               target="_blank"
               rel="noopener noreferrer"
               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1.5 shrink-0 transition-colors"

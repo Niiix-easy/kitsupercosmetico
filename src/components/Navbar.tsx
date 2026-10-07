@@ -3,6 +3,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins } from 'lucide-react';
 import { useLoyaltyPoints } from '../hooks/useLoyaltyPoints';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 interface NavbarProps {
   cartCount: number;
@@ -54,13 +55,13 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           </span>
         </div>
         <a
-          href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20falar%20com%20o%20suporte%20Dyusar"
+          href={getWhatsAppUrl('Olá! Gostaria de falar com o suporte Dyusar Cosméticos.')}
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden sm:inline-flex items-center gap-1 font-bold text-black hover:underline shrink-0 bg-black/10 px-2 py-0.5 rounded"
+          className="hidden sm:inline-flex items-center gap-1.5 font-bold text-black hover:opacity-90 shrink-0 bg-black/10 px-2.5 py-0.5 rounded transition-all"
         >
           <WhatsAppIcon className="w-3.5 h-3.5" />
-          <span>Suporte WhatsApp</span>
+          <span>WhatsApp: {WHATSAPP_FORMATTED}</span>
         </a>
       </div>
 
@@ -248,6 +249,24 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
             >
               Perguntas Frequentes (FAQ)
             </a>
+
+            <div className="pt-2 border-t border-slate-800">
+              <a
+                href={getWhatsAppUrl('Olá! Gostaria de falar com o atendimento Dyusar.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={closeMobileMenu}
+                className="w-full py-2.5 px-3 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] font-bold flex items-center justify-between text-xs transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
+                  <span>WhatsApp: {WHATSAPP_FORMATTED}</span>
+                </span>
+                <span className="text-[10px] bg-[#25D366] text-black px-1.5 py-0.5 rounded font-black tracking-wide">
+                  ONLINE
+                </span>
+              </a>
+            </div>
           </nav>
         </div>
       )}

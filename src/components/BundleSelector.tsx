@@ -5,6 +5,8 @@ import { PRODUCT_BUNDLES } from '../data/productData';
 import { Check, Sparkles, Gift, Truck, ArrowRight, ShieldCheck, ZoomIn, X, Upload, Camera, RotateCcw, AlertTriangle, CheckCircle2, Zap, Scale, Crown, Award as AwardIcon } from 'lucide-react';
 import { ProductBundle } from '../types';
 import { useKitImages } from '../utils/kitImageStorage';
+import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 const BUNDLE_SPECS: Record<string, any> = {
   'kit-home-care': {
@@ -664,6 +666,30 @@ export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, 
               />
             );
           })}
+        </div>
+
+        {/* WhatsApp Consultation Banner */}
+        <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#14151f] via-[#101c14] to-[#14151f] border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0">
+              <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Em dúvida sobre qual kit escolher?</p>
+              <p className="text-xs text-slate-400">
+                Fale agora com nossa consultora capilar pelo WhatsApp: <strong className="text-[#25D366] font-mono">{WHATSAPP_FORMATTED}</strong>
+              </p>
+            </div>
+          </div>
+          <a
+            href={getWhatsAppUrl('Olá! Gostaria de ajuda para escolher o kit de reconstrução ideal para o meu tipo de cabelo.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs uppercase tracking-wider transition-colors shrink-0 flex items-center gap-2"
+          >
+            <WhatsAppIcon className="w-4 h-4 text-black" />
+            <span>Consultoria via WhatsApp</span>
+          </a>
         </div>
 
       </div>

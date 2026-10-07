@@ -3,6 +3,8 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { REVIEWS_DATA } from '../data/productData';
 import { Star, CheckCircle, ThumbsUp, Camera, MessageSquarePlus, Filter, X, Award, Share2, MessageCircle, Copy, Check } from 'lucide-react';
 import { Review } from '../types';
+import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 export const ReviewsSection: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'photo' | 'fiveStar' | 'pro'>('all');
@@ -201,7 +203,7 @@ export const ReviewsSection: React.FC = () => {
                 onClick={() => handleShareWhatsApp()}
                 className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
+                <WhatsAppIcon className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
               </button>
 
@@ -467,6 +469,18 @@ export const ReviewsSection: React.FC = () => {
                 >
                   Publicar Avaliação
                 </button>
+
+                <div className="pt-2 text-center">
+                  <a
+                    href={getWhatsAppUrl('Olá! Gostaria de enviar minhas fotos e depoimento de Antes e Depois do Kit Dyusar!')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-[#25D366] hover:underline font-semibold"
+                  >
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
+                    <span>Ou envie fotos/vídeos pelo WhatsApp: {WHATSAPP_FORMATTED}</span>
+                  </a>
+                </div>
               </form>
             )}
 

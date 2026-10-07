@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck, Tag, Sparkles } from 'lucide-react';
 import { CartItem, ProductBundle } from '../types';
+import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -116,6 +118,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               >
                 Ver Kits Promocionais
               </button>
+
+              <a
+                href={getWhatsAppUrl('Olá! Gostaria de falar com uma especialista pelo WhatsApp para tirar dúvidas sobre meu cabelo.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#25D366] font-semibold hover:underline"
+              >
+                <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
+                <span>Atendimento WhatsApp: {WHATSAPP_FORMATTED}</span>
+              </a>
             </div>
           ) : (
             cartItems.map((item) => (
@@ -312,6 +324,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </span>
               <div className="absolute inset-0 bg-white/20 translate-x-[-100%] animate-shimmer" />
             </button>
+
+            <a
+              href={getWhatsAppUrl(`Olá! Gostaria de finalizar meu pedido pelo WhatsApp: ${cartItems.map(i => `${i.quantity}x ${i.bundle.title}`).join(' + ')} - Total: R$ ${total.toFixed(2).replace('.', ',')}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-3 rounded-xl text-xs font-bold text-[#25D366] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 transition-all flex items-center justify-center gap-2"
+            >
+              <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
+              <span>Finalizar pelo WhatsApp ({WHATSAPP_FORMATTED})</span>
+            </a>
 
             <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />

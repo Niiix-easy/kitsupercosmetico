@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Truck, Lock, RotateCcw, Award, CheckCircle, Package, Crown, Sparkles, ArrowRight, Check, Mail, Coins, Gift } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED, WHATSAPP_DISPLAY } from '../data/whatsapp';
 
 interface FooterProps {
   onOpenTracking: () => void;
@@ -205,13 +206,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
               <div>
                 <strong className="text-slate-300 block mb-1">WhatsApp de Suporte:</strong>
                 <a
-                  href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20suporte%20sobre%20o%20Kit%20Dyusar"
+                  href={getWhatsAppUrl('Olá, gostaria de suporte sobre o Kit Dyusar.')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 transition-all font-semibold text-xs"
                 >
                   <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
-                  <span>(11) 99999-9999</span>
+                  <span>{WHATSAPP_FORMATTED}</span>
                 </a>
               </div>
               <div className="pt-2">

@@ -114,7 +114,7 @@ export const NewsletterModal: React.FC<NewsletterModalProps> = ({ onApplyCoupon 
               <input
                 type="text"
                 required
-                placeholder="Seu WhatsApp ou E-mail preferido"
+                placeholder="Ex: (66) 99677-2704 ou seu@email.com"
                 value={contactInput}
                 onChange={(e) => setContactInput(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-amber-400 transition-colors"

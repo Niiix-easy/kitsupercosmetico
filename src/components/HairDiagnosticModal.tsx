@@ -3,6 +3,8 @@ import { X, Sparkles, CheckCircle2, ArrowRight, RefreshCw, AlertCircle } from 'l
 import { PRODUCT_BUNDLES } from '../data/productData';
 import { db } from '../lib/firebase';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { WhatsAppIcon } from './WhatsAppIcon';
+import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
 interface HairDiagnosticModalProps {
   isOpen: boolean;
@@ -228,6 +230,24 @@ export const HairDiagnosticModal: React.FC<HairDiagnosticModalProps> = ({
               >
                 Garantir Meu Kit Indicado
               </button>
+            </div>
+
+            {/* WhatsApp Hair Therapist Option */}
+            <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/25 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
+                <span className="text-slate-300">
+                  Dúvidas sobre o cronograma? Tire dúvidas com a nossa especialista no WhatsApp: <strong className="text-[#25D366] font-mono">{WHATSAPP_FORMATTED}</strong>
+                </span>
+              </div>
+              <a
+                href={getWhatsAppUrl(`Olá! Fiz o teste capilar no site e meu diagnóstico foi Protocolo SOS Reconstrução. Gostaria de tirar dúvidas com uma especialista.`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-[11px] whitespace-nowrap shrink-0 transition-colors"
+              >
+                Tirar Dúvidas
+              </a>
             </div>
 
             <div className="flex items-center justify-center gap-2 pt-2">
