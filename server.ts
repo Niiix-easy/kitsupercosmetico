@@ -104,8 +104,8 @@ function transcodeVideoForSafari(filePath: string): boolean {
   try {
     console.log(`[FFmpeg-Sync] Always transcoding to H.264 Main Profile + yuv420p for Safari: ${filePath}`);
     
-    // Using optional maps (-map 0:v? -map 0:a?) to support videos with or without audio tracks
-    execSync(`ffmpeg -y -i "${filePath}" -c:v libx264 -profile:v main -pix_fmt yuv420p -preset superfast -crf 23 -c:a aac -b:a 128k -map 0:v? -map 0:a? "${tempOutput}"`);
+    // Using optional maps (-map 0:v? -map 0:a?) to support videos with or without audio tracks, and +faststart for instant web streaming
+    execSync(`ffmpeg -y -i "${filePath}" -c:v libx264 -profile:v main -pix_fmt yuv420p -preset superfast -crf 23 -c:a aac -b:a 128k -movflags +faststart -map 0:v? -map 0:a? "${tempOutput}"`);
     
     if (fs.existsSync(tempOutput) && fs.statSync(tempOutput).size > 0) {
       fs.unlinkSync(filePath);
@@ -476,9 +476,9 @@ app.post('/api/import-youtube-video', async (req, res) => {
 
     await fetchYouTubeVideoViaLoader(youtubeUrl, rawPath);
 
-    // Transcode to Safari/iOS H.264 Main Profile + yuv420p + AAC
+    // Transcode to Safari/iOS H.264 Main Profile + yuv420p + AAC with +faststart
     if (fs.existsSync(rawPath)) {
-      execSync(`ffmpeg -y -i "${rawPath}" -c:v libx264 -profile:v main -pix_fmt yuv420p -preset superfast -crf 23 -c:a aac -b:a 128k -map 0:v? -map 0:a? "${finalPath}"`);
+      execSync(`ffmpeg -y -i "${rawPath}" -c:v libx264 -profile:v main -pix_fmt yuv420p -preset superfast -crf 23 -c:a aac -b:a 128k -movflags +faststart -map 0:v? -map 0:a? "${finalPath}"`);
       fs.unlinkSync(rawPath);
     }
 

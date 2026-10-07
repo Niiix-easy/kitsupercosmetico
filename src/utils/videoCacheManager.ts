@@ -3,7 +3,7 @@
  * Provides programmatic video asset caching, blob URL streaming, and cache invalidation.
  */
 
-export const VIDEO_CACHE_NAME = 'dyusar-video-cache-v1';
+export const VIDEO_CACHE_NAME = 'dyusar-video-cache-v2';
 
 export interface CachedVideoInfo {
   url: string;
@@ -19,7 +19,7 @@ export const isCacheStorageSupported = (): boolean => {
 };
 
 /**
- * Retrieves a video from CacheStorage. If present, returns a Blob URL for instant playback.
+ * Retrieves a video from CacheStorage. If present, returns a Blob URL with explicit video/mp4 MIME.
  */
 export const getVideoFromCache = async (url: string): Promise<string | null> => {
   if (!isCacheStorageSupported()) return null;
@@ -30,9 +30,11 @@ export const getVideoFromCache = async (url: string): Promise<string | null> => 
     const cleanUrl = url.split('?')[0];
     const match = await cache.match(cleanUrl) || await cache.match(url);
 
-    if (match) {
-      const blob = await match.blob();
-      if (blob.size > 0) {
+    if (match && match.ok) {
+      const buffer = await match.arrayBuffer();
+      // Ensure the buffer is non-trivial and has MP4 magic header (ftyp)
+      if (buffer.byteLength > 10000) {
+        const blob = new Blob([buffer], { type: 'video/mp4' });
         return URL.createObjectURL(blob);
       }
     }
@@ -44,7 +46,7 @@ export const getVideoFromCache = async (url: string): Promise<string | null> => 
 };
 
 /**
- * Fetches a video, stores it in CacheStorage, and returns a local Blob URL.
+ * Fetches a video, stores it in CacheStorage with explicit headers, and returns a local Blob URL.
  */
 export const cacheVideo = async (url: string): Promise<string> => {
   const cleanUrl = url.split('?')[0];
@@ -58,9 +60,12 @@ export const cacheVideo = async (url: string): Promise<string> => {
     
     // Check if already in cache
     const existing = await cache.match(cleanUrl);
-    if (existing) {
-      const blob = await existing.blob();
-      return URL.createObjectURL(blob);
+    if (existing && existing.ok) {
+      const buffer = await existing.arrayBuffer();
+      if (buffer.byteLength > 10000) {
+        const blob = new Blob([buffer], { type: 'video/mp4' });
+        return URL.createObjectURL(blob);
+      }
     }
 
     // Fetch fresh copy
@@ -71,10 +76,22 @@ export const cacheVideo = async (url: string): Promise<string> => {
     });
 
     if (response.ok) {
-      // Store clone in CacheStorage with the clean URL
-      await cache.put(cleanUrl, response.clone());
-      const blob = await response.blob();
-      return URL.createObjectURL(blob);
+      const buffer = await response.arrayBuffer();
+      if (buffer.byteLength > 10000) {
+        // Create an explicit response with video/mp4 content type for CacheStorage
+        const cacheResponse = new Response(buffer, {
+          status: 200,
+          statusText: 'OK',
+          headers: {
+            'Content-Type': 'video/mp4',
+            'Content-Length': buffer.byteLength.toString(),
+            'Date': new Date().toUTCString()
+          }
+        });
+        await cache.put(cleanUrl, cacheResponse);
+        const blob = new Blob([buffer], { type: 'video/mp4' });
+        return URL.createObjectURL(blob);
+      }
     }
   } catch (error) {
     console.warn('[CacheStorage] Error caching video asset:', error);
@@ -102,6 +119,13 @@ export const clearSpecificVideoCache = async (urlOrFilename: string): Promise<bo
       }
     }
 
+    // Also purge old v1 cache if exists
+    try {
+      if (await caches.has('dyusar-video-cache-v1')) {
+        await caches.delete('dyusar-video-cache-v1');
+      }
+    } catch {}
+
     // Broadcast cache invalidation event across the client
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('video-cache-cleared', { 
@@ -123,6 +147,7 @@ export const clearAllVideoCaches = async (): Promise<boolean> => {
   if (!isCacheStorageSupported()) return false;
 
   try {
+    await caches.delete('dyusar-video-cache-v1');
     const success = await caches.delete(VIDEO_CACHE_NAME);
     
     if (typeof window !== 'undefined') {

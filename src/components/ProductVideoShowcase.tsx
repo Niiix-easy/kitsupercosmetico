@@ -132,25 +132,9 @@ const VideoCard: React.FC<{
     return () => { isCancelled = true; };
   }, [normalizedVideoUrl, video.id]);
 
-  // Check CacheStorage when viewport entered, without interrupting active playback
+  // Cache invalidation listener
   useEffect(() => {
     let isMounted = true;
-
-    const checkCache = async () => {
-      try {
-        const cachedUrl = await getVideoFromCache(normalizedVideoUrl);
-        if (cachedUrl && isMounted && videoRef.current?.paused) {
-          console.log(`[VideoShowcase-Debug] Using local CacheStorage blob for ${video.id}: ${cachedUrl}`);
-          setCurrentSrc(cachedUrl);
-        }
-      } catch (err) {
-        console.warn(`[VideoShowcase-Warn] CacheStorage check skipped for ${video.id}:`, err);
-      }
-    };
-
-    if (hasEnteredViewport) {
-      checkCache();
-    }
 
     const handleCacheCleared = (e: Event) => {
       const customEv = e as CustomEvent;
@@ -159,6 +143,7 @@ const VideoCard: React.FC<{
         const freshUrl = `${normalizedVideoUrl.split('?')[0]}?bust=${Date.now()}`;
         console.log(`[VideoShowcase-Debug] Cache cleared event received, refreshing ${video.id}: ${freshUrl}`);
         setCurrentSrc(freshUrl);
+        setLoadError(false);
       }
     };
 
@@ -167,7 +152,7 @@ const VideoCard: React.FC<{
       isMounted = false;
       window.removeEventListener('video-cache-cleared', handleCacheCleared);
     };
-  }, [normalizedVideoUrl, video.id, hasEnteredViewport]);
+  }, [normalizedVideoUrl, video.id]);
 
   // When another video starts playing, pause this one cleanly
   useEffect(() => {
@@ -225,9 +210,9 @@ const VideoCard: React.FC<{
       // Announce to parent to coordinate single-video audio focus
       onCardPlay(video.id);
 
-      // If the media element has not initialized its source yet, assign and load
-      if (!el.src || el.src === '' || el.currentSrc === '') {
-        el.src = currentSrc;
+      // If the media element has not initialized its source yet or had a blob failure, assign normalized direct URL and load
+      if (!el.src || el.src === '' || el.currentSrc === '' || el.currentSrc.startsWith('blob:')) {
+        el.src = normalizedVideoUrl;
         el.load();
       }
 
@@ -236,6 +221,7 @@ const VideoCard: React.FC<{
         await el.play();
         setIsPlaying(true);
         setIsBuffering(false);
+        setLoadError(false);
         console.log(`[VideoShowcase-Debug] ▶️ Video execution successful for ${video.id}`);
       } catch (err: any) {
         console.warn(`[VideoShowcase-Warn] Direct unmuted play failed for ${video.id}: ${err?.message}. Attempting muted fallback.`);
@@ -245,6 +231,7 @@ const VideoCard: React.FC<{
           await el.play();
           setIsPlaying(true);
           setIsBuffering(false);
+          setLoadError(false);
           console.log(`[VideoShowcase-Debug] ▶️ Video execution succeeded via muted fallback for ${video.id}`);
         } catch (fallbackErr: any) {
           console.error(`[VideoShowcase-Error] Final play execution failed for ${video.id}:`, fallbackErr);
@@ -356,6 +343,16 @@ const VideoCard: React.FC<{
               networkState: e.currentTarget.networkState,
               publicFile: `public/${video.id}.mp4`
             });
+            // If error was caused by a blob URL, immediately fall back to the direct faststart MP4 file!
+            if (e.currentTarget.currentSrc?.startsWith('blob:') || currentSrc.startsWith('blob:')) {
+              console.warn(`[VideoShowcase-Warn] Blob demuxer failed for ${video.id}. Falling back to direct static file: ${normalizedVideoUrl}`);
+              setCurrentSrc(normalizedVideoUrl);
+              if (videoRef.current) {
+                videoRef.current.src = normalizedVideoUrl;
+                videoRef.current.load();
+              }
+              return;
+            }
             if (isOnline) {
               setLoadError(true);
             }
@@ -442,16 +439,19 @@ const VideoCard: React.FC<{
                 onClick={(e) => {
                   e.stopPropagation();
                   setLoadError(false);
-                  const fresh = `${normalizedVideoUrl.split('?')[0]}?retry=${Date.now()}`;
-                  setCurrentSrc(fresh);
+                  setCurrentSrc(normalizedVideoUrl);
                   if (videoRef.current) {
-                    videoRef.current.src = fresh;
+                    videoRef.current.src = normalizedVideoUrl;
                     videoRef.current.load();
+                    videoRef.current.play().then(() => {
+                      setIsPlaying(true);
+                      setIsBuffering(false);
+                    }).catch(() => {});
                   }
                 }}
                 className="mt-3 px-3 py-1.5 rounded-lg bg-amber-500 text-black text-[10px] font-black uppercase tracking-wider hover:bg-amber-400 transition-colors cursor-pointer"
               >
-                Recarregar Vídeo
+                Assistir Demonstração
               </button>
             </div>
           </div>
@@ -575,6 +575,21 @@ export const ProductVideoShowcase: React.FC = () => {
     video_2: '/video_2.mp4',
     video_3: '/video_3.mp4'
   });
+
+  // Proactively clear corrupted or deprecated video caches from old service workers or blobs
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'caches' in window) {
+      caches.delete('dyusar-videos-cache-v1');
+      caches.delete('dyusar-video-cache-v1');
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          for (const reg of regs) {
+            reg.update();
+          }
+        });
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetch('/api/video-urls')
