@@ -578,7 +578,8 @@ export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, 
   }), [enrichedBundles, images, stockUnits, loadedImages, isProcessingUpload, dragOverBundleId, smoothParallaxY, triggerHaptic, onSelectBundle, onQuickBuy, handleZoom, handleCompare, handleFileSelect, setDragOverBundleId, onImageLoad]);
 
   return (
-    <section id="ofertas" ref={sectionRef} className="py-12 lg:py-16 bg-[#0c0d10] relative">
+    <section id="bundle-selector" data-section="bundle-selector" ref={sectionRef} className="py-12 lg:py-16 bg-[#0c0d10] relative">
+      <div id="ofertas" className="absolute -top-16 left-0 pointer-events-none" />
       {/* Schema.org Product List JSON-LD Structured Data for Google Rich Snippets */}
       <script
         type="application/ld+json"

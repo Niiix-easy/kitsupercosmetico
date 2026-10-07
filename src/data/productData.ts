@@ -1,4 +1,4 @@
-import { ProductBundle, Review, PurchaseNotification } from '../types';
+import { ProductBundle, Review, PurchaseNotification, FAQItem } from '../types';
 
 export const PRODUCT_BUNDLES: ProductBundle[] = [
   {
@@ -180,30 +180,54 @@ export const REVIEWS_DATA: Review[] = [
   }
 ];
 
-export const FAQ_DATA = [
+export const FAQ_DATA: FAQItem[] = [
   {
+    id: 'faq-endurecido',
+    category: 'Resultados & Textura',
     question: 'O kit deixa o cabelo endurecido ou pesado?',
     answer: 'Não! Muitas queratinas comuns no mercado enrijecem os fios porque não possuem reposição lipídica associada. O diferencial exclusivo do Kit Dyusar é o equilíbrio entre a queratina biomimética (Passo 2) e os óleos nobres de Ojon e Murumuru (Passo 3 e 4), que nutrem e emolientam o fio enquanto reconstroem a medula.'
   },
   {
+    id: 'faq-quimica',
+    category: 'Compatibilidade Química',
     question: 'Serve para cabelos com progressiva, botox ou alisamentos?',
     answer: 'Sim, é 100% compatível com qualquer química, seja formol, ácidos orgânicos, tioglicolato de amônia ou guanidina. Inclusive, é altamente recomendado para restaurar a resistência antes e depois de retoques de raiz.'
   },
   {
+    id: 'faq-frequencia',
+    category: 'Modo de Aplicação',
     question: 'Qual a frequência de uso recomendada?',
     answer: 'Para cabelos em estado de corte químico ou muito emborrachados, recomendamos usar o protocolo completo 1x por semana nas primeiras duas semanas. Conforme o fio recuperar a resistência natural, alterne para uso a cada 15 dias para manutenção.'
   },
   {
+    id: 'faq-rendimento',
+    category: 'Rendimento',
     question: 'Quanto tempo dura cada kit?',
     answer: 'O Kit Home Care 300ml rende em média de 18 a 22 aplicações completas em cabelos médios. O Kit Profissional de 1 Litro rende de 55 a 65 aplicações, sendo a escolha ideal para máximo rendimento e economia.'
   },
   {
+    id: 'faq-garantia',
+    category: 'Garantia',
     question: 'Como funciona a Garantia Incondicional de 7 Dias?',
     answer: 'Nós confiamos tanto na fórmula Dyusar que oferecemos 7 dias de teste incondicional. Se você não notar seu cabelo mais resistente, encorpado e brilhante, basta enviar uma mensagem no WhatsApp do nosso suporte oficial (66) 99677-2704 e devolveremos 100% do seu dinheiro sem questionamentos.'
   },
   {
+    id: 'faq-envio',
+    category: 'Envio & Rastreio',
     question: 'Qual o prazo de envio e rastreamento?',
     answer: 'Todos os pedidos confirmados até as 14h são despachados no mesmo dia útil via Correios (Sedex/PAC) ou transportadora expressa Jadlog. Você recebe o código de rastreamento com seguro de carga diretamente no seu WhatsApp e e-mail cadastrado.'
+  },
+  {
+    id: 'faq-secador',
+    category: 'Modo de Aplicação',
+    question: 'Precisa obrigatoriamente de secador ou prancha após a aplicação?',
+    answer: 'O Passo 4 (Leave-in Térmico) possui proteção contra altas temperaturas e é termoativado. Você pode deixar secar naturalmente para um efeito macio e antifrizz, ou escovar e pranchar para uma selagem cuticular espelhada e duradoura.'
+  },
+  {
+    id: 'faq-salao',
+    category: 'Profissional & Salão',
+    question: 'Sou cabeleireira ou dona de salão. Como posso lucrar com o kit?',
+    answer: 'O Kit Profissional de 1 Litro rende em média 65 procedimentos completos. Cobrando entre R$ 120 e R$ 250 por cauterização reconstrutora no seu espaço, seu faturamento pode ultrapassar R$ 7.800,00 com um único kit.'
   }
 ];
 

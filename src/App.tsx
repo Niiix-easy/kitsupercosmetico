@@ -44,6 +44,8 @@ import { trackEvent } from './utils/pixelTracking';
 import { updateBundleMetaTags } from './utils/dynamicMetaTags';
 import { sendOrderUpdateNotification } from './utils/pushNotifications';
 import { initPerformanceMonitoring } from './utils/performanceMonitor';
+import { initAssetPrefetchStrategy } from './utils/assetPrefetcher';
+import { cleanupConsoleAfterCriticalLoad } from './utils/consoleCleaner';
 
 export default function App() {
   // Cart state initialized with default popular bundle ready for quick checkout if desired
@@ -79,6 +81,9 @@ export default function App() {
     // Initialize LCP and Core Web Vitals performance monitoring
     initPerformanceMonitoring();
 
+    // Initialize Tier 1 (Hero LCP) & Tier 2 (ProductVideoShowcase) Asset Prefetch Strategy
+    initAssetPrefetchStrategy();
+
     // 2. Preload critical images to eliminate layout shift and show seamless luxury experience
     const criticalImages = [
       '/images/kit-profissional-completo.webp?v=luxury5',
@@ -94,12 +99,16 @@ export default function App() {
         loadedCount++;
         if (loadedCount >= criticalImages.length) {
           setIsAssetsLoading(false);
+          cleanupConsoleAfterCriticalLoad(1500);
         }
       };
       img.src = src;
     });
 
-    const timer = setTimeout(() => setIsAssetsLoading(false), 1500);
+    const timer = setTimeout(() => {
+      setIsAssetsLoading(false);
+      cleanupConsoleAfterCriticalLoad(1800);
+    }, 1500);
     
     // Hidden admin access shortcut (Alt + A)
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -296,12 +305,13 @@ export default function App() {
 
       {/* Hero Section */}
       <main className="flex-1">
-        <AnimatedSection delay={0}>
+        {/* Hero Section - Above-the-fold instant rendering for LCP < 2.5s */}
+        <section id="hero-section" className="relative">
           <Hero
             onOpenCartWithBundle={handleSelectBundleById}
             onOpenQuiz={() => setIsQuizOpen(true)}
           />
-        </AnimatedSection>
+        </section>
 
         {/* High-Converting Trust Badges Section */}
         <AnimatedSection>

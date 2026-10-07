@@ -57,3 +57,11 @@ export interface QuizState {
   hairType: string;
   hairLength: string;
 }
+
+export interface FAQItem {
+  id?: string;
+  question: string;
+  answer: string;
+  category?: string;
+}
+

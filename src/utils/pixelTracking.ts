@@ -185,4 +185,17 @@ export const trackEvent = {
       body: JSON.stringify({ eventName, videoTitle })
     }).catch(err => console.warn('Deferred engagement log notice:', err?.message || err));
   },
+
+  // Custom Event (e.g. WhatsApp Click)
+  custom: (eventName: string, params?: Record<string, any>) => {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', eventName, params);
+    }
+    if (typeof window.fbq === 'function') {
+      window.fbq('trackCustom', eventName, params);
+    }
+    if (window.ttq && typeof window.ttq.track === 'function') {
+      window.ttq.track(eventName, params);
+    }
+  },
 };

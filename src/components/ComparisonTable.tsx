@@ -42,7 +42,8 @@ export const ComparisonTable: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 lg:py-24 bg-[#0f1015] border-t border-amber-500/20 relative">
+    <section id="comparison-table" data-section="comparison-table" className="py-16 lg:py-24 bg-[#0f1015] border-t border-amber-500/20 relative">
+      <div id="comparativo" className="absolute -top-16 left-0 pointer-events-none" />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

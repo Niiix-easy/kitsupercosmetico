@@ -18,6 +18,7 @@ import { getVideoFromCache } from '../utils/videoCacheManager';
 import { normalizeVideoAssetUrl } from '../utils/videoUrlResolver';
 import { useVideoPreload } from '../hooks/useVideoPreload';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { prefetchVideoMetadata, prefetchImage } from '../utils/assetPrefetcher';
 
 interface VideoItem {
   id: string;
@@ -288,6 +289,8 @@ const VideoCard: React.FC<{
           ref={videoRef}
           src={currentSrc}
           poster={normalizedPosterUrl}
+          width="480"
+          height="854"
           playsInline
           muted={isGlobalMuted}
           loop
@@ -561,7 +564,7 @@ export const ProductVideoShowcase: React.FC = () => {
   
   // Custom Hook: Defer metadata loading with Intersection Observer API
   const { hasEnteredViewport, preloadMode } = useVideoPreload(showcaseRef, {
-    rootMargin: '200px',
+    rootMargin: '450px',
     threshold: 0.05,
   });
 
@@ -575,6 +578,15 @@ export const ProductVideoShowcase: React.FC = () => {
     video_2: '/video_2.mp4',
     video_3: '/video_3.mp4'
   });
+
+  // Pre-warm showcase video metadata when user approaches section
+  useEffect(() => {
+    if (hasEnteredViewport) {
+      prefetchVideoMetadata(videoUrls.video_1 || '/video_1.mp4');
+      prefetchVideoMetadata(videoUrls.video_2 || '/video_2.mp4');
+      prefetchVideoMetadata(videoUrls.video_3 || '/video_3.mp4');
+    }
+  }, [hasEnteredViewport, videoUrls]);
 
   // Proactively clear corrupted or deprecated video caches from old service workers or blobs
   useEffect(() => {
@@ -639,6 +651,8 @@ export const ProductVideoShowcase: React.FC = () => {
 
   return (
     <section 
+      id="video-showcase"
+      data-section="video-showcase"
       ref={showcaseRef} 
       className="py-16 lg:py-24 bg-[#0c0d10] relative overflow-hidden border-t border-amber-500/10"
     >

@@ -69,6 +69,21 @@
     <link rel="apple-touch-icon" href="/images/logo-dyusar-horizontal.png" />
     <link rel="manifest" href="/manifest.json" />
 
+    <!-- ============================================================== -->
+    <!-- CORE WEB VITALS LCP (< 2.5s) PRELOAD & PREFETCH STRATEGY       -->
+    <!-- Prioritizes Hero Primary LCP Image, Video Posters & Metadata   -->
+    <!-- ============================================================== -->
+    <!-- Tier 1: Hero Primary LCP Assets (Immediate High-Priority Download) -->
+    <link rel="preload" as="image" href="/images/kit-profissional-completo.webp?v=luxury5" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/video-hero-poster.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/logo-dyusar-horizontal.webp" type="image/webp" />
+
+    <!-- Tier 2: ProductVideoShowcase Posters & Video Assets Prefetch -->
+    <link rel="prefetch" as="image" href="/video_1_poster.webp" type="image/webp" />
+    <link rel="prefetch" as="image" href="/video_2_poster.webp" type="image/webp" />
+    <link rel="prefetch" as="image" href="/video_3_poster.webp" type="image/webp" />
+    <link rel="prefetch" as="fetch" href="/api/video-urls" />
+
     <!-- Schema.org Structured Data (JSON-LD) for E-Commerce Product & Brand -->
     <script type="application/ld+json">
     {

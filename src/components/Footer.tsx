@@ -184,7 +184,13 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                 <a href="#depoimentos" className="hover:text-amber-300 transition-colors">Depoimentos Reais de Clientes</a>
               </li>
               <li>
-                <a href="#faq" className="hover:text-amber-300 transition-colors">Perguntas Frequentes</a>
+                <a href="#faq" className="hover:text-amber-300 transition-colors">Perguntas Frequentes (FAQ)</a>
+              </li>
+              <li>
+                <a href="#faq-garantia" className="text-slate-400 hover:text-amber-300 transition-colors">Dúvidas sobre a Garantia de 7 Dias</a>
+              </li>
+              <li>
+                <a href="#faq-quimica" className="text-slate-400 hover:text-amber-300 transition-colors">Compatibilidade com Química</a>
               </li>
             </ul>
           </div>

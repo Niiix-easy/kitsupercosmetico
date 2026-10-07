@@ -88,3 +88,33 @@
   opacity: 1;
   transition: opacity 0.35s ease-out;
 }
+
+/* Subtle CSS wobble animation for WhatsApp button engagement (especially on mobile) */
+@keyframes whatsapp-wobble {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  15% {
+    transform: scale(1.1) rotate(-8deg) translateY(-2px);
+  }
+  30% {
+    transform: scale(1.1) rotate(7deg) translateY(-2px);
+  }
+  45% {
+    transform: scale(1.07) rotate(-5deg);
+  }
+  60% {
+    transform: scale(1.04) rotate(4deg);
+  }
+  75% {
+    transform: scale(1.02) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-wobble-subtle {
+  animation: whatsapp-wobble 1.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+

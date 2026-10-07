@@ -94,12 +94,15 @@ export const ProductVisualizer: React.FC<ProductVisualizerProps> = ({
               key={activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image}
               src={activeView === 'kit' ? (images['kit-profissional-completo'] || current.image) : current.image}
               alt={current.alt}
+              width="480"
+              height="480"
               // @ts-ignore - fetchPriority is the React-compatible property name for LCP optimization
               fetchPriority={activeView === 'kit' ? 'high' : 'auto'}
               loading={activeView === 'kit' ? 'eager' : 'lazy'}
+              decoding="async"
               onLoad={() => setIsImgLoaded(true)}
               className={`max-h-[82%] max-w-[90%] object-contain filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)] group-hover:scale-105 transition-all duration-500 rounded-lg ${
-                isImgLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                isImgLoaded || activeView === 'kit' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
               }`}
               onError={(e: any) => {
                 e.currentTarget.src = '/images/Kit Profissional 1 Litro.png';

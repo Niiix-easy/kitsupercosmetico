@@ -201,6 +201,7 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
             // @ts-ignore
             fetchPriority="high"
             loading="eager"
+            decoding="async"
             width="640"
             height="360"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-90 relative z-10"
