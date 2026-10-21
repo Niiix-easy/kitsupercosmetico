@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Award, Sparkles, CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react';
+import { OptimizedImage } from './OptimizedImage';
 
 interface SalonShowcaseSectionProps {
   onCtaClick: () => void;
@@ -23,17 +24,13 @@ export const SalonShowcaseSection: React.FC<SalonShowcaseSectionProps> = ({ onCt
                 style={{ backgroundImage: "url('/images/hair-salon-professional-tiny.webp')" }}
               />
 
-              <img
+              <OptimizedImage
                 src="/images/hair-salon-professional.webp"
                 alt="Profissional aplicando o tratamento Dyusar em salão de beleza"
-                loading="lazy"
-                decoding="async"
-                width="600"
-                height="400"
-                onLoad={() => setIsImgLoaded(true)}
-                className={`w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-all duration-500 filter brightness-95 ${
-                  isImgLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
+                width={600}
+                height={400}
+                aspectRatio="3/2"
+                className="w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-all duration-500 filter brightness-95"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex flex-col justify-end p-6">
                 <span className="text-[10px] uppercase font-bold text-amber-300 tracking-widest bg-amber-500/20 border border-amber-400/40 px-2.5 py-1 rounded-full self-start mb-1 backdrop-blur-sm">

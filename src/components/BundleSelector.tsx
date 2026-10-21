@@ -5,6 +5,7 @@ import { PRODUCT_BUNDLES } from '../data/productData';
 import { Check, Sparkles, Gift, Truck, ArrowRight, ShieldCheck, ZoomIn, X, Upload, Camera, RotateCcw, AlertTriangle, CheckCircle2, Zap, Scale, Crown, Award as AwardIcon } from 'lucide-react';
 import { ProductBundle } from '../types';
 import { useKitImages } from '../utils/kitImageStorage';
+import { OptimizedImage } from './OptimizedImage';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
@@ -218,21 +219,13 @@ const BundleCard = memo(({
             }}
             className="w-full h-full flex items-center justify-center"
           >
-            <img
+            <OptimizedImage
               src={currentImg}
               alt={bundle.title}
-              loading="lazy"
-              decoding="async"
-              width="320"
-              height="320"
-              onLoad={() => onImageLoad(bundle.id)}
-              onError={(e: any) => {
-                e.currentTarget.src = '/images/Kit Profissional 1 Litro.png';
-                onImageLoad(bundle.id);
-              }}
-              className={`max-h-full max-w-full object-contain filter drop-shadow-2xl group-hover:scale-105 transition-all duration-500 rounded-lg cursor-pointer ${
-                isImageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
+              width={320}
+              height={320}
+              aspectRatio="1/1"
+              className="max-h-full max-w-full object-contain filter drop-shadow-2xl group-hover:scale-105 transition-all duration-500 rounded-lg cursor-pointer"
               onClick={() => onZoom(currentImg, bundle.title)}
             />
           </motion.div>

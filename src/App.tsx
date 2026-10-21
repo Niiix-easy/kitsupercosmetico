@@ -13,7 +13,7 @@ import { Navbar } from './components/Navbar';
 import { StockUrgencyBanner } from './components/StockUrgencyBanner';
 import { Hero } from './components/Hero';
 import { TrustBadgesSection } from './components/TrustBadgesSection';
-import { BeforeAfterSlider } from './components/BeforeAfterSlider';
+
 import { StepByStepSection } from './components/StepByStepSection';
 import { FormulaSection } from './components/FormulaSection';
 import { SalonShowcaseSection } from './components/SalonShowcaseSection';
@@ -318,10 +318,6 @@ export default function App() {
           <TrustBadgesSection />
         </AnimatedSection>
 
-        {/* Before & After Interactive Comparison */}
-        <AnimatedSection>
-          <BeforeAfterSlider />
-        </AnimatedSection>
 
         {/* 4-Step Treatment Protocol */}
         <AnimatedSection>
