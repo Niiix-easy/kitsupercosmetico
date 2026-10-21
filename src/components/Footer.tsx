@@ -61,16 +61,10 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                 <a href="#tratamento" className="hover:text-amber-300 transition-colors">Como Funciona o Tratamento</a>
               </li>
               <li>
-                <a href="#antes-depois" className="hover:text-amber-300 transition-colors">Casos Clínicos de Antes e Depois</a>
-              </li>
-              <li>
                 <a href="#ativos" className="hover:text-amber-300 transition-colors">Composição e Ativos Científicos</a>
               </li>
               <li>
                 <a href="#tratamento" className="hover:text-amber-300 transition-colors">Protocolo dos 4 Passos</a>
-              </li>
-              <li>
-                <a href="#depoimentos" className="hover:text-amber-300 transition-colors">Depoimentos Reais de Clientes</a>
               </li>
               <li>
                 <a href="#faq" className="hover:text-amber-300 transition-colors">Perguntas Frequentes (FAQ)</a>

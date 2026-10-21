@@ -19,7 +19,6 @@ import { FormulaSection } from './components/FormulaSection';
 import { SalonShowcaseSection } from './components/SalonShowcaseSection';
 import { BundleSelector } from './components/BundleSelector';
 import { ComparisonTable } from './components/ComparisonTable';
-import { ReviewsSection } from './components/ReviewsSection';
 import { FAQSection } from './components/FAQSection';
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
@@ -31,7 +30,6 @@ import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { NewsletterModal } from './components/NewsletterModal';
 import { RecurringNewsletterToast } from './components/RecurringNewsletterToast';
 import { AnimatedSection } from './components/AnimatedSection';
-import { VideoTestimonials } from './components/VideoTestimonials';
 import { ProductVideoShowcase } from './components/ProductVideoShowcase';
 import { PushNotificationManager } from './components/PushNotificationManager';
 import { WhatsAppButton } from './components/WhatsAppButton';
@@ -347,15 +345,7 @@ export default function App() {
           <ComparisonTable />
         </AnimatedSection>
 
-        {/* Verified Customer Reviews */}
-        <AnimatedSection>
-          <ReviewsSection />
-        </AnimatedSection>
 
-        {/* Video Testimonials Section (Professional Reviews with Images) */}
-        <AnimatedSection>
-          <VideoTestimonials onSelectKit={() => handleSelectBundleById('kit-profissional-1litro')} />
-        </AnimatedSection>
 
         {/* Product in Action Videos Section (Influencer Reviews) */}
         <AnimatedSection>

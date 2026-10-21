@@ -102,9 +102,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           <a href="#tratamento" className="hover:text-amber-300 transition-colors whitespace-nowrap">
             O Tratamento
           </a>
-          <a href="#antes-depois" className="hover:text-amber-300 transition-colors whitespace-nowrap">
-            Antes & Depois
-          </a>
           <button 
             onClick={onOpenQuiz} 
             className="hover:text-amber-300 transition-colors flex items-center gap-1 text-amber-400 font-semibold cursor-pointer whitespace-nowrap"
@@ -121,9 +118,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           >
             Carrinho & Pedido
           </button>
-          <a href="#depoimentos" className="hover:text-amber-300 transition-colors whitespace-nowrap">
-            Resultados Reais
-          </a>
           <a href="#faq" className="hover:text-amber-300 transition-colors whitespace-nowrap">
             Dúvidas
           </a>
@@ -186,13 +180,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
             >
               O Tratamento dos 4 Passos
             </a>
-            <a 
-              href="#antes-depois" 
-              onClick={closeMobileMenu}
-              className="py-1.5 px-2 rounded-lg hover:bg-slate-800 hover:text-amber-300 transition-colors"
-            >
-              Antes e Depois Interativo
-            </a>
             <button 
               onClick={() => {
                 closeMobileMenu();
@@ -222,13 +209,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
             >
               Meu Carrinho de Compras
             </button>
-            <a 
-              href="#depoimentos" 
-              onClick={closeMobileMenu}
-              className="py-1.5 px-2 rounded-lg hover:bg-slate-800 hover:text-amber-300 transition-colors"
-            >
-              Depoimentos e Avaliações Reais
-            </a>
             <a 
               href="#faq" 
               onClick={closeMobileMenu}
