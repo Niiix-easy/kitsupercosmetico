@@ -27,8 +27,6 @@ import { HairDiagnosticModal } from './components/HairDiagnosticModal';
 import { PurchaseNotificationToast } from './components/PurchaseNotificationToast';
 import { FloatingMobileCTA } from './components/FloatingMobileCTA';
 import { OrderTrackingModal } from './components/OrderTrackingModal';
-import { NewsletterModal } from './components/NewsletterModal';
-import { RecurringNewsletterToast } from './components/RecurringNewsletterToast';
 import { AnimatedSection } from './components/AnimatedSection';
 import { ProductVideoShowcase } from './components/ProductVideoShowcase';
 import { PushNotificationManager } from './components/PushNotificationManager';
@@ -128,13 +126,6 @@ export default function App() {
     setIsAdminOpen(true);
   };
 
-  const handleApplyNewsletterCoupon = (code: string) => {
-    setCouponApplied(code);
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.bundle.price * item.quantity), 0);
-    const discountRate = code === 'PRIMEIRA10' ? 0.10 : 0.05;
-    setDiscountAmount(subtotal * discountRate);
-    setIsCartOpen(true);
-  };
 
   // Handle adding or selecting a bundle
   const handleSelectBundle = useCallback((bundle: ProductBundle) => {
@@ -395,14 +386,6 @@ export default function App() {
         onClose={() => setIsTrackingOpen(false)}
       />
 
-      {/* Subtle Inactivity 15-second Newsletter Modal */}
-      <NewsletterModal onApplyCoupon={handleApplyNewsletterCoupon} />
-
-      {/* Recurring 10% Newsletter Toast Pop-up */}
-      <RecurringNewsletterToast 
-        onApplyCoupon={handleApplyNewsletterCoupon}
-        isModalOpen={isCartOpen || isCheckoutOpen || isQuizOpen || isTrackingOpen || isAdminOpen || isAdminLoginOpen}
-      />
 
       {/* Real-time Purchase Social Proof Popups */}
       <PurchaseNotificationToast />
