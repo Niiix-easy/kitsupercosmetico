@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { ShoppingBag, Sparkles, Menu, X, ArrowRight, Coins } from 'lucide-react';
-import { useLoyaltyPoints } from '../hooks/useLoyaltyPoints';
+import { ShoppingBag, Sparkles, Menu, X, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { getWhatsAppUrl, WHATSAPP_FORMATTED } from '../data/whatsapp';
 
@@ -15,7 +14,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const loyaltyPoints = useLoyaltyPoints();
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
@@ -133,17 +131,6 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
 
         {/* Zone 3: 1-2 primary actions */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* Loyalty Points Counter */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/5 border border-amber-500/10 text-amber-300/90 shadow-inner group transition-all hover:bg-amber-500/10">
-            <div className="relative">
-              <Coins className="w-4 h-4 text-amber-400 animate-pulse group-hover:scale-110 transition-transform" />
-              <div className="absolute inset-0 bg-amber-400 blur-md opacity-20" />
-            </div>
-            <div className="flex flex-col items-start leading-none">
-              <span className="text-[10px] font-black font-mono">{loyaltyPoints}</span>
-              <span className="text-[7px] uppercase font-bold tracking-tighter opacity-70">Pontos VIP</span>
-            </div>
-          </div>
 
           {/* Diagnostic Quiz Button for tablet */}
           <button

@@ -69,9 +69,6 @@ export const PushNotificationManager: React.FC = () => {
             <span className="text-[10px] uppercase font-black tracking-widest text-amber-400">
               Notificações Oficiais Dyusar
             </span>
-            <span className="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[9px] font-mono">
-              VIP
-            </span>
           </div>
 
           <h4 className="text-xs sm:text-sm font-bold text-white mt-0.5">

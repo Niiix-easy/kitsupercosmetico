@@ -17,7 +17,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
     const perm = await Notification.requestPermission();
     if (perm === 'granted') {
       sendLocalPushNotification(
-        'Dyusar VIP: Notificações Ativadas! ✨',
+        'Dyusar: Notificações Ativadas! ✨',
         'Você receberá atualizações em tempo real do rastreamento do seu pedido e avisos de ofertas relâmpago de lote.'
       );
     }
