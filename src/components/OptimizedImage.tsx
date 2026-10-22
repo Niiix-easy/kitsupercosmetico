@@ -7,6 +7,8 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   height?: string | number;
   aspectRatio?: string;
   className?: string;
+  fetchPriority?: 'high' | 'low' | 'auto';
+  loading?: 'lazy' | 'eager';
 }
 
 /**
@@ -22,6 +24,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   height,
   aspectRatio,
   className = '',
+  fetchPriority = 'auto',
+  loading = 'lazy',
   ...props
 }) => {
   const [error, setError] = useState(false);
@@ -60,7 +64,9 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           alt={alt}
           width={width}
           height={height}
-          loading="lazy"
+          loading={loading}
+          // @ts-ignore
+          fetchPriority={fetchPriority}
           onLoad={() => setLoaded(true)}
           onError={() => setError(true)}
           className={`w-full h-full object-cover transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}

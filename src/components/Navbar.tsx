@@ -18,7 +18,12 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   useEffect(() => {
+    let lastCall = 0;
     const handleScroll = () => {
+      const now = Date.now();
+      if (now - lastCall < 100) return;
+      lastCall = now;
+
       const currentScrollY = window.scrollY;
       
       // Always show at the very top

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { OptimizedImage } from './OptimizedImage';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, ShieldCheck, Truck, Tag, Sparkles } from 'lucide-react';
 import { CartItem, ProductBundle } from '../types';
 import { WhatsAppIcon } from './WhatsAppIcon';
@@ -137,14 +137,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-14 h-16 rounded-lg bg-black/60 border border-amber-500/30 p-1 flex items-center justify-center shrink-0 overflow-hidden">
-                    <LazyLoadImage
+                    <OptimizedImage
                       src={item.bundle.image || '/images/kit-profissional-1litro.png'}
                       alt={item.bundle.title}
-                      effect="opacity"
-                      wrapperClassName="w-full h-full flex items-center justify-center"
-                      onError={(e: any) => {
-                        e.currentTarget.src = '/images/kit-profissional-1litro.png';
-                      }}
+                      width={56}
+                      height={64}
+                      aspectRatio="14/16"
                       className="max-h-full max-w-full object-contain filter drop-shadow-sm"
                     />
                   </div>

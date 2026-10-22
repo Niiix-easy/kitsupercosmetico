@@ -3,6 +3,7 @@ import { TREATMENT_STEPS } from '../data/productData';
 import { Clock, Sparkles, CheckCircle2, ChevronRight, Info, Camera, ZoomIn, X, AlertTriangle } from 'lucide-react';
 import { saveStoredKitImage } from '../utils/kitImageStorage';
 import { VisualStepByStep } from './VisualStepByStep';
+import { OptimizedImage } from './OptimizedImage';
 
 const DEFAULT_STEP_PHOTOS: Record<string, string> = {
   '01': '/images/shampoo-reparador.webp?v=luxury4',
@@ -155,11 +156,13 @@ export const StepByStepSection: React.FC = () => {
             {/* Left badge, photo & title */}
             <div className="md:col-span-5 flex flex-col sm:flex-row md:flex-col items-center md:items-start text-center md:text-left border-b md:border-b-0 md:border-r border-slate-800 pb-6 md:pb-0 md:pr-6 gap-4">
               <div className="relative w-36 h-48 rounded-xl bg-gradient-to-b from-[#181922] to-black border border-amber-500/40 p-2.5 flex items-center justify-center shrink-0 shadow-xl group overflow-hidden">
-                <img
+                <OptimizedImage
                   key={currentPhoto}
                   src={currentPhoto}
                   alt={activeStep.name}
-                  loading="lazy"
+                  width={144}
+                  height={192}
+                  aspectRatio="144/192"
                   className="max-h-full max-w-full object-contain filter drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 cursor-pointer"
                   onClick={() => setZoomImage({ url: currentPhoto, title: activeStep.name })}
                 />

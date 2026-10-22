@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, VolumeX, RotateCcw, X, ArrowRight, Sparkles, CheckCircle2, Upload, Loader2 } from 'lucide-react';
+import { OptimizedImage } from './OptimizedImage';
 
 interface FeaturedVideoPlayerProps {
   onBuyKit: () => void;
@@ -195,15 +196,14 @@ export const FeaturedVideoPlayer: React.FC<FeaturedVideoPlayerProps> = ({ onBuyK
             className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105 opacity-40"
             style={{ backgroundImage: "url('/images/video-hero-poster-tiny.webp')" }}
           />
-          <img
+          <OptimizedImage
             src="/images/video-hero-poster.webp"
             alt="Vídeo de demonstração do Kit Dyusar no lavatório"
-            // @ts-ignore
             fetchPriority="high"
             loading="eager"
-            decoding="async"
-            width="640"
-            height="360"
+            width={640}
+            height={360}
+            aspectRatio="16/9"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 filter brightness-90 relative z-10"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 z-10" />

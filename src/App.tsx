@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import * as Sentry from "@sentry/react";
 import { initSentry } from './utils/sentry';
 
@@ -14,25 +14,29 @@ import { StockUrgencyBanner } from './components/StockUrgencyBanner';
 import { Hero } from './components/Hero';
 import { TrustBadgesSection } from './components/TrustBadgesSection';
 
-import { StepByStepSection } from './components/StepByStepSection';
-import { FormulaSection } from './components/FormulaSection';
-import { SalonShowcaseSection } from './components/SalonShowcaseSection';
-import { BundleSelector } from './components/BundleSelector';
-import { ComparisonTable } from './components/ComparisonTable';
-import { FAQSection } from './components/FAQSection';
-import { Footer } from './components/Footer';
-import { CartDrawer } from './components/CartDrawer';
-import { CheckoutModal } from './components/CheckoutModal';
-import { HairDiagnosticModal } from './components/HairDiagnosticModal';
+// Lazy load non-critical below-the-fold sections
+const StepByStepSection = lazy(() => import('./components/StepByStepSection').then(m => ({ default: m.StepByStepSection })));
+const FormulaSection = lazy(() => import('./components/FormulaSection').then(m => ({ default: m.FormulaSection })));
+const SalonShowcaseSection = lazy(() => import('./components/SalonShowcaseSection').then(m => ({ default: m.SalonShowcaseSection })));
+const BundleSelector = lazy(() => import('./components/BundleSelector').then(m => ({ default: m.BundleSelector })));
+const ComparisonTable = lazy(() => import('./components/ComparisonTable').then(m => ({ default: m.ComparisonTable })));
+const FAQSection = lazy(() => import('./components/FAQSection').then(m => ({ default: m.FAQSection })));
+const Footer = lazy(() => import('./components/Footer').then(m => ({ default: m.Footer })));
+const ProductVideoShowcase = lazy(() => import('./components/ProductVideoShowcase').then(m => ({ default: m.ProductVideoShowcase })));
+
+// Lazy load interaction-heavy modals and overlays
+const CartDrawer = lazy(() => import('./components/CartDrawer').then(m => ({ default: m.CartDrawer })));
+const CheckoutModal = lazy(() => import('./components/CheckoutModal').then(m => ({ default: m.CheckoutModal })));
+const HairDiagnosticModal = lazy(() => import('./components/HairDiagnosticModal').then(m => ({ default: m.HairDiagnosticModal })));
+const OrderTrackingModal = lazy(() => import('./components/OrderTrackingModal').then(m => ({ default: m.OrderTrackingModal })));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminLoginModal = lazy(() => import('./components/AdminLoginModal').then(m => ({ default: m.AdminLoginModal })));
+
 import { PurchaseNotificationToast } from './components/PurchaseNotificationToast';
 import { FloatingMobileCTA } from './components/FloatingMobileCTA';
-import { OrderTrackingModal } from './components/OrderTrackingModal';
 import { AnimatedSection } from './components/AnimatedSection';
-import { ProductVideoShowcase } from './components/ProductVideoShowcase';
 import { PushNotificationManager } from './components/PushNotificationManager';
 import { WhatsAppButton } from './components/WhatsAppButton';
-import { AdminDashboard } from './components/AdminDashboard';
-import { AdminLoginModal } from './components/AdminLoginModal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PRODUCT_BUNDLES } from './data/productData';
 import { CartItem, ProductBundle } from './types';
@@ -42,6 +46,14 @@ import { sendOrderUpdateNotification } from './utils/pushNotifications';
 import { initPerformanceMonitoring } from './utils/performanceMonitor';
 import { initAssetPrefetchStrategy } from './utils/assetPrefetcher';
 import { cleanupConsoleAfterCriticalLoad } from './utils/consoleCleaner';
+
+// Reusable Loading Placeholder for Suspense
+const SectionLoader = () => (
+  <div className="w-full py-20 flex flex-col items-center justify-center bg-[#0c0d10]">
+    <div className="w-12 h-12 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
+    <span className="mt-4 text-[10px] uppercase tracking-widest text-amber-500/60 font-bold">Dyusar Haute Performance</span>
+  </div>
+);
 
 export default function App() {
   // Cart state initialized with default popular bundle ready for quick checkout if desired
@@ -307,105 +319,98 @@ export default function App() {
           <TrustBadgesSection />
         </AnimatedSection>
 
+        <Suspense fallback={<SectionLoader />}>
+          {/* 4-Step Treatment Protocol */}
+          <AnimatedSection>
+            <StepByStepSection />
+          </AnimatedSection>
 
-        {/* 4-Step Treatment Protocol */}
-        <AnimatedSection>
-          <StepByStepSection />
-        </AnimatedSection>
+          {/* Scientific Active Ingredients */}
+          <AnimatedSection>
+            <FormulaSection />
+          </AnimatedSection>
 
-        {/* Scientific Active Ingredients */}
-        <AnimatedSection>
-          <FormulaSection />
-        </AnimatedSection>
+          {/* Professional Salon Showcase with Real Images */}
+          <AnimatedSection>
+            <SalonShowcaseSection onCtaClick={() => handleSelectBundleById('kit-profissional-1litro')} />
+          </AnimatedSection>
 
-        {/* Professional Salon Showcase with Real Images */}
-        <AnimatedSection>
-          <SalonShowcaseSection onCtaClick={() => handleSelectBundleById('kit-profissional-1litro')} />
-        </AnimatedSection>
+          {/* Package Tiers & Bundles (Virtualized) */}
+          <AnimatedSection>
+            <BundleSelector 
+              onSelectBundle={handleSelectBundle} 
+              onQuickBuy={handleQuickBuy}
+            />
+          </AnimatedSection>
 
-        {/* Package Tiers & Bundles (Virtualized) */}
-        <AnimatedSection>
-          <BundleSelector 
-            onSelectBundle={handleSelectBundle} 
-            onQuickBuy={handleQuickBuy}
-          />
-        </AnimatedSection>
+          {/* Benchmark Comparison Table */}
+          <AnimatedSection>
+            <ComparisonTable />
+          </AnimatedSection>
 
-        {/* Benchmark Comparison Table */}
-        <AnimatedSection>
-          <ComparisonTable />
-        </AnimatedSection>
+          {/* Product in Action Videos Section (Influencer Reviews) */}
+          <AnimatedSection>
+            <ProductVideoShowcase />
+          </AnimatedSection>
 
-
-
-        {/* Product in Action Videos Section (Influencer Reviews) */}
-        <AnimatedSection>
-          <ProductVideoShowcase />
-        </AnimatedSection>
-
-        {/* Frequently Asked Questions */}
-        <AnimatedSection>
-          <FAQSection />
-        </AnimatedSection>
+          {/* Frequently Asked Questions */}
+          <AnimatedSection>
+            <FAQSection />
+          </AnimatedSection>
+        </Suspense>
       </main>
 
       {/* Footer */}
-      <Footer onOpenTracking={() => setIsTrackingOpen(true)} />
+      <Suspense fallback={<div className="h-40 bg-[#08090c]" />}>
+        <Footer onOpenTracking={() => setIsTrackingOpen(true)} />
+      </Suspense>
 
       {/* Interactive Cart Drawer */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cartItems={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onOpenCheckout={handleOpenCheckout}
-        onToggleAddOn={handleToggleAddOn}
-      />
+      <Suspense fallback={null}>
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cartItems={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onOpenCheckout={handleOpenCheckout}
+          onToggleAddOn={handleToggleAddOn}
+        />
 
-      {/* Simulated Checkout Modal with PIX & Cards */}
-      <CheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        cartItems={cartItems}
-        discountAmount={discountAmount}
-        couponApplied={couponApplied}
-        onOrderSuccess={handleOrderSuccess}
-      />
+        {/* Simulated Checkout Modal with PIX & Cards */}
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          cartItems={cartItems}
+          discountAmount={discountAmount}
+          couponApplied={couponApplied}
+          onOrderSuccess={handleOrderSuccess}
+        />
 
-      {/* Hair Diagnostic Quiz Modal */}
-      <HairDiagnosticModal
-        isOpen={isQuizOpen}
-        onClose={() => setIsQuizOpen(false)}
-        onSelectBundle={handleSelectBundleById}
-      />
+        {/* Hair Diagnostic Quiz Modal */}
+        <HairDiagnosticModal
+          isOpen={isQuizOpen}
+          onClose={() => setIsQuizOpen(false)}
+          onSelectBundle={handleSelectBundleById}
+        />
 
-      {/* Order Tracking Modal */}
-      <OrderTrackingModal
-        isOpen={isTrackingOpen}
-        onClose={() => setIsTrackingOpen(false)}
-      />
+        {/* Order Tracking Modal */}
+        <OrderTrackingModal
+          isOpen={isTrackingOpen}
+          onClose={() => setIsTrackingOpen(false)}
+        />
 
+        {/* Admin Panel Components */}
+        {isAdminOpen && (
+          <AdminDashboard onClose={() => setIsAdminOpen(false)} />
+        )}
 
-      {/* Real-time Purchase Social Proof Popups */}
-      <PurchaseNotificationToast />
-
-      {/* Mobile Bottom Floating CTA (<768px) */}
-      <FloatingMobileCTA onBuyClick={() => handleSelectBundleById('kit-profissional-1litro')} />
-
-      {/* Floating WhatsApp for Direct Support */}
-      <WhatsAppButton />
-
-      {/* Admin Panel Components */}
-      {isAdminOpen && (
-        <AdminDashboard onClose={() => setIsAdminOpen(false)} />
-      )}
-
-      <AdminLoginModal 
-        isOpen={isAdminLoginOpen} 
-        onClose={() => setIsAdminLoginOpen(false)}
-        onLoginSuccess={handleAdminLoginSuccess}
-      />
+        <AdminLoginModal 
+          isOpen={isAdminLoginOpen} 
+          onClose={() => setIsAdminLoginOpen(false)}
+          onLoginSuccess={handleAdminLoginSuccess}
+        />
+      </Suspense>
     </div>
     </ErrorBoundary>
   );
