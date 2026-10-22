@@ -676,7 +676,7 @@ export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, 
             </div>
           </div>
           <a
-            href={getWhatsAppUrl('Olá! Gostaria de ajuda para escolher o kit de reconstrução ideal para o meu tipo de cabelo.')}
+            href={getWhatsAppUrl()}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs uppercase tracking-wider transition-colors shrink-0 flex items-center gap-2"

@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           </span>
         </div>
         <a
-          href={getWhatsAppUrl('Olá! Gostaria de falar com o suporte Dyusar Cosméticos.')}
+          href={getWhatsAppUrl()}
           target="_blank"
           rel="noopener noreferrer"
           className="hidden sm:inline-flex items-center gap-1.5 font-bold text-black hover:opacity-90 shrink-0 bg-black/10 px-2.5 py-0.5 rounded transition-all"
@@ -219,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
 
             <div className="pt-2 border-t border-slate-800">
               <a
-                href={getWhatsAppUrl('Olá! Gostaria de falar com o atendimento Dyusar.')}
+                href={getWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={closeMobileMenu}

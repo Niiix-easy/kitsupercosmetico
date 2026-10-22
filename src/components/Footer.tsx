@@ -95,7 +95,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
               <div>
                 <strong className="text-slate-300 block mb-1">WhatsApp de Suporte:</strong>
                 <a
-                  href={getWhatsAppUrl('Olá, gostaria de suporte sobre o Kit Dyusar.')}
+                  href={getWhatsAppUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 transition-all font-semibold text-xs"

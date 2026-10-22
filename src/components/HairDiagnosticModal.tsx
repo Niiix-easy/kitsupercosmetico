@@ -241,7 +241,7 @@ export const HairDiagnosticModal: React.FC<HairDiagnosticModalProps> = ({
                 </span>
               </div>
               <a
-                href={getWhatsAppUrl(`Olá! Fiz o teste capilar no site e meu diagnóstico foi Protocolo SOS Reconstrução. Gostaria de tirar dúvidas com uma especialista.`)}
+                href={getWhatsAppUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-[11px] whitespace-nowrap shrink-0 transition-colors"
