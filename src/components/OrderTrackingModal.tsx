@@ -210,7 +210,7 @@ export const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, 
             <div>
               <p className="font-bold text-white leading-tight">Precisa de ajuda com a sua entrega?</p>
               <p className="text-[11px] text-slate-300 mt-0.5">
-                Suporte online no WhatsApp: <strong className="text-emerald-400">{WHATSAPP_FORMATTED}</strong>
+                Suporte online no WhatsApp.
               </p>
             </div>
             <a

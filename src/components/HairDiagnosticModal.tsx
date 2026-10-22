@@ -237,7 +237,7 @@ export const HairDiagnosticModal: React.FC<HairDiagnosticModalProps> = ({
               <div className="flex items-center gap-2">
                 <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
                 <span className="text-slate-300">
-                  Dúvidas sobre o cronograma? Tire dúvidas com a nossa especialista no WhatsApp: <strong className="text-[#25D366] font-mono">{WHATSAPP_FORMATTED}</strong>
+                  Dúvidas sobre o cronograma? Tire dúvidas com a nossa especialista no WhatsApp.
                 </span>
               </div>
               <a

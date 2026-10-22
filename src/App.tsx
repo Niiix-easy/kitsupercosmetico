@@ -303,6 +303,7 @@ export default function App() {
 
       {/* Stock Urgency & Location Banner */}
       <StockUrgencyBanner />
+      <WhatsAppButton />
 
       {/* Hero Section */}
       <main className="flex-1">

@@ -320,7 +320,7 @@ export const FAQSection: React.FC = () => {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors"
               >
                 <WhatsAppIcon className="w-4 h-4 text-white" />
-                <span>Perguntar no WhatsApp: {WHATSAPP_FORMATTED}</span>
+                <span>Perguntar no WhatsApp</span>
               </a>
             </div>
           )}
@@ -335,7 +335,7 @@ export const FAQSection: React.FC = () => {
             <div>
               <p className="text-sm sm:text-base font-bold text-white">Ainda tem dúvidas sobre o seu cabelo?</p>
               <p className="text-xs text-slate-400 mt-0.5">
-                Nossa equipe de especialistas atende você ao vivo no WhatsApp: <strong className="text-emerald-400 font-mono">{WHATSAPP_FORMATTED}</strong>
+                Nossa equipe de especialistas atende você ao vivo no WhatsApp.
               </p>
             </div>
           </div>

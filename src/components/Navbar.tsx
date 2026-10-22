@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
           className="hidden sm:inline-flex items-center gap-1.5 font-bold text-black hover:opacity-90 shrink-0 bg-black/10 px-2.5 py-0.5 rounded transition-all"
         >
           <WhatsAppIcon className="w-3.5 h-3.5" />
-          <span>WhatsApp: {WHATSAPP_FORMATTED}</span>
+          <span>Atendimento WhatsApp</span>
         </a>
       </div>
 
@@ -232,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenQui
               >
                 <span className="flex items-center gap-2">
                   <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
-                  <span>WhatsApp: {WHATSAPP_FORMATTED}</span>
+                  <span>WhatsApp</span>
                 </span>
                 <span className="text-[10px] bg-[#25D366] text-black px-1.5 py-0.5 rounded font-black tracking-wide">
                   ONLINE

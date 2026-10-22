@@ -126,7 +126,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#25D366] font-semibold hover:underline"
               >
                 <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
-                <span>Atendimento WhatsApp: {WHATSAPP_FORMATTED}</span>
+                <span>Atendimento via WhatsApp</span>
               </a>
             </div>
           ) : (

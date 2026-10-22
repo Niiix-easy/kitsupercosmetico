@@ -101,7 +101,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenTracking }) => {
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] hover:bg-[#25D366]/20 transition-all font-semibold text-xs"
                 >
                   <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
-                  <span>{WHATSAPP_FORMATTED}</span>
+                  <span>Atendimento via WhatsApp</span>
                 </a>
               </div>
               <div className="pt-2">

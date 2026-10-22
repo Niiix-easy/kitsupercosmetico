@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { X, CheckCircle2, ShieldCheck, QrCode, CreditCard, FileText, Copy, ArrowRight, Truck, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { CartItem } from '../types';
@@ -448,16 +449,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   </label>
 
                   <div className="relative">
-                    <div 
+                    <motion.div 
+                      whileTap={{ scale: 0.98 }}
+                      animate={copiedPix ? { borderColor: '#10b981' } : {}}
                       onClick={handleCopyPix}
                       className="p-3 rounded-xl bg-slate-950 border border-slate-700 text-[11px] font-mono text-slate-300 break-all select-all max-h-16 overflow-y-auto cursor-pointer hover:border-emerald-400 transition-colors"
                     >
                       {order?.pixQrCode || 'Gerando código...'}
-                    </div>
+                    </motion.div>
                   </div>
 
                   {/* Copy Button */}
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={handleCopyPix}
                     className={`w-full py-3 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg ${
@@ -477,7 +481,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <span>Copiar Código Pix (Copia e Cola)</span>
                       </>
                     )}
-                  </button>
+                  </motion.button>
 
                   {/* Floating Clipboard Notification Toast */}
                   {copiedPix && (
@@ -684,7 +688,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors"
               >
                 <WhatsAppIcon className="w-4 h-4 text-white" />
-                <span>Acompanhar no WhatsApp ({WHATSAPP_FORMATTED})</span>
+                <span>Acompanhar no WhatsApp</span>
               </a>
 
               <button

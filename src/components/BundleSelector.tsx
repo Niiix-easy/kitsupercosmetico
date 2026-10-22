@@ -680,7 +680,7 @@ export const BundleSelector: React.FC<BundleSelectorProps> = ({ onSelectBundle, 
             <div>
               <p className="text-sm font-bold text-white">Em dúvida sobre qual kit escolher?</p>
               <p className="text-xs text-slate-400">
-                Fale agora com nossa consultora capilar pelo WhatsApp: <strong className="text-[#25D366] font-mono">{WHATSAPP_FORMATTED}</strong>
+                Fale agora com nossa consultora capilar pelo WhatsApp.
               </p>
             </div>
           </div>
